@@ -73,7 +73,7 @@ void get_perimeter(MultiPoint& perimeter_points)
 void get_full_field_as_polygon_wh(Polygon_wh& field)
 {
 
-  std::ifstream field_stream("data/ghiande_stems_perimeter.wkt");
+  std::ifstream field_stream("data/fake_ghiande.wkt");
   int wkt_count = 0;
   do
   {
@@ -111,8 +111,10 @@ int main(int argc, char* argv[])
   std::cout << "show original field" << std::endl << std::endl;
 
   CGAL::draw(ghiande_pwh);
-  cdt_ghiande.insert(ghiande_pwh.outer_boundary().begin(), ghiande_pwh.outer_boundary().end());
-  for (const Polygon&  hole: ghiande_pwh.holes())
+
+  // build  constrained triangulation
+  cdt_ghiande.insert(ghiande_pwh.outer_boundary().begin(), ghiande_pwh.outer_boundary().end()); // add the boundary
+  for (const Polygon&  hole: ghiande_pwh.holes()) // add the holes
     cdt_ghiande.insert_constraint(hole.vertices_begin(), hole.vertices_end(), true);
 
   std::cout << "constrained triangulation depth: " << cdt_ghiande.dimension() << std::endl;
@@ -120,48 +122,68 @@ int main(int argc, char* argv[])
   CGAL::draw(cdt_ghiande);
 
 
+  std::unordered_map<Face_handle, bool> ghiande_in_domain_map;
+  boost::associative_property_map< std::unordered_map<Face_handle,bool> > in_domain_ghiande(ghiande_in_domain_map);
 
-  //construct two non-intersecting nested polygons
-  Polygon polygon1;
-  polygon1.push_back(Point(10,0));
-  polygon1.push_back(Point(12,0));
-  polygon1.push_back(Point(12,2));
-  polygon1.push_back(Point(11,1.75));
-  polygon1.push_back(Point(10,2));
-  Polygon polygon2;
-  polygon2.push_back(Point(10.5,0.5));
-  polygon2.push_back(Point(11.5,0.5));
-  polygon2.push_back(Point(11.5,1.5));
-  polygon2.push_back(Point(10.5,1.5));
+  CGAL::mark_domain_in_triangulation(cdt_ghiande, in_domain_ghiande);
 
-  std::vector<Polygon> holes(1);
-  holes[0]=polygon2;
-  Polygon_wh pwh(polygon1,holes.begin(),holes.end());
-  //Insert the polygons into a constrained triangulation
-  CDT cdt;
-  cdt.insert_constraint(polygon1.vertices_begin(), polygon1.vertices_end(), true);
-  cdt.insert_constraint(polygon2.vertices_begin(), polygon2.vertices_end(), true);
-  cdt.insert_constraint(Point(10.25, 0.25), Point(10.25, 1.75));
+  CGAL::draw(cdt_ghiande, in_domain_ghiande);
 
-  std::unordered_map<Face_handle, bool> in_domain_map;
-  boost::associative_property_map< std::unordered_map<Face_handle,bool> >
-    in_domain(in_domain_map);
+  int ghiande_indomain_face_count = 0;
+  int ghiande_face_count = 0;
 
-  //Mark facets that are inside the domain bounded by the polygon
-  CGAL::mark_domain_in_triangulation(cdt, in_domain);
-
-  unsigned int count=0;
-  for (Face_handle f : cdt.finite_face_handles())
+  for (Face_handle f : cdt_ghiande.finite_face_handles())
   {
-    if ( get(in_domain, f) ) ++count;
+    if ( get(in_domain_ghiande, f) ) ++ghiande_indomain_face_count;
+    ++ghiande_face_count;
   }
+  std::cout << std::endl << std::endl << "ghiande indomain faces: " << ghiande_indomain_face_count << std::endl;
+  std::cout << "ghiande total faces: " << ghiande_face_count << std::endl << std::endl;
 
-  std::cout << "There are " << count << " faces in the domain." << std::endl;
-  assert(count > 0);
-  assert(count < cdt.number_of_faces());
-
-  CGAL::draw(pwh);
-  CGAL::draw(cdt);
-  CGAL::draw(cdt, in_domain);
   return 0;
+
+
+  // //construct two non-intersecting nested polygons
+  // Polygon polygon1;
+  // polygon1.push_back(Point(10,0));
+  // polygon1.push_back(Point(12,0));
+  // polygon1.push_back(Point(12,2));
+  // polygon1.push_back(Point(11,1.75));
+  // polygon1.push_back(Point(10,2));
+  // Polygon polygon2;
+  // polygon2.push_back(Point(10.5,0.5));
+  // polygon2.push_back(Point(11.5,0.5));
+  // polygon2.push_back(Point(11.5,1.5));
+  // polygon2.push_back(Point(10.5,1.5));
+  //
+  // std::vector<Polygon> holes(1);
+  // holes[0]=polygon2;
+  // Polygon_wh pwh(polygon1,holes.begin(),holes.end());
+  // //Insert the polygons into a constrained triangulation
+  // CDT cdt;
+  // cdt.insert_constraint(polygon1.vertices_begin(), polygon1.vertices_end(), true);
+  // cdt.insert_constraint(polygon2.vertices_begin(), polygon2.vertices_end(), true);
+  // cdt.insert_constraint(Point(10.25, 0.25), Point(10.25, 1.75));
+  //
+  // std::unordered_map<Face_handle, bool> in_domain_map;
+  // boost::associative_property_map< std::unordered_map<Face_handle,bool> >
+  //   in_domain(in_domain_map);
+  //
+  // //Mark facets that are inside the domain bounded by the polygon
+  // CGAL::mark_domain_in_triangulation(cdt, in_domain);
+  //
+  // unsigned int count=0;
+  // for (Face_handle f : cdt.finite_face_handles())
+  // {
+  //   if ( get(in_domain, f) ) ++count;
+  // }
+  //
+  // std::cout << "There are " << count << " faces in the domain." << std::endl;
+  // assert(count > 0);
+  // assert(count < cdt.number_of_faces());
+  //
+  // CGAL::draw(pwh);
+  // CGAL::draw(cdt);
+  // CGAL::draw(cdt, in_domain);
+  // return 0;
 }
