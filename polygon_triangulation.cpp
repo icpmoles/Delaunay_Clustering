@@ -99,7 +99,6 @@ void get_full_field_as_polygon_wh(Polygon_wh& field)
 
 void center_coordinates(Polygon_wh& polygon, Polygon_wh& polygon_out)
 {
-  std::list<Polygon> holes_translated;
   const bbox_2 bounds = polygon.bbox();
   const double x_min = bounds.xmin();
   const double y_min = bounds.ymin();
@@ -107,7 +106,7 @@ void center_coordinates(Polygon_wh& polygon, Polygon_wh& polygon_out)
   std::cout << "x_min: " << x_min << "; y_min: " << y_min<< std::endl;
   CGAL::Aff_transformation_2<K> translate(CGAL::TRANSLATION, CGAL::Vector_2<K>(x_min,y_min));
 
-  Polygon_wh new_polygon(transform(translate,polygon.outer_boundary()));
+  const Polygon_wh new_polygon(transform(translate,polygon.outer_boundary()));
   polygon_out = new_polygon;
   for (const Polygon& hole : polygon.holes())
     polygon_out.add_hole(transform(translate,hole));
