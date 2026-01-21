@@ -1,0 +1,8 @@
+//
+// Created by icpmoles on 21/01/26.
+//
+
+#ifndef TRIANGULATION_2_EXAMPLES_UTILS_H
+#define TRIANGULATION_2_EXAMPLES_UTILS_H
+
+#endif //TRIANGULATION_2_EXAMPLES_UTILS_H

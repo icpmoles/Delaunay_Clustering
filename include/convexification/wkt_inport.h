@@ -1,5 +1,5 @@
 //
-// Created by icpmoles on 21/01/26.
+// Created by Iacopo Moles on 21/01/26.
 //
 
 #ifndef TRIANGULATION_2_EXAMPLES_WKT_INPORT_H
@@ -11,6 +11,8 @@
 
 #include <CGAL/Polygon_2.h>
 #include <CGAL/IO/WKT.h>
+
+namespace WKT_IO {
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel       K; // EPIC
 typedef CGAL::Triangulation_vertex_base_2<K>                      Vb;
@@ -24,12 +26,16 @@ typedef CDT::Point                                                Point;
 typedef CGAL::Polygon_2<K>                                        Polygon;
 typedef CGAL::Bbox_2                                              bbox_2;
 
-// typedef CGAL::Polygon_with_holes_2<K>                             Polygon_with_holes_2;
-
 typedef CGAL::Polygon_with_holes_2<K>                             Polygon_wh;
 typedef std::vector<Point>                                        MultiPoint;
 typedef std::list<Polygon_wh>                                     Poly_list;
 
+/**
+ *
+ * @param mp Destination variable
+ *
+ * Overwrites Destination with OBSTACLES from GHIANDE as an UNORDERED collection of Points
+ */
 inline void get_obstacles_as_multipoint(MultiPoint& mp)
 {
   std::ifstream obstacle_file("data/ghiande_obstacles_only_multipart.wkt");
@@ -45,6 +51,12 @@ inline void get_obstacles_as_multipoint(MultiPoint& mp)
   // CGAL::draw(mp);
 }
 
+/**
+ *
+ * @param perimeter_points Destination variable
+ *
+ * Overwrites Destination with PERIMETER from GHIANDE as an UNORDERED collection of Points
+ */
 inline void get_perimeter(MultiPoint& perimeter_points)
 {
   std::ifstream is("data/ghiande_perimeter_2m.wkt");
@@ -67,6 +79,17 @@ inline void get_perimeter(MultiPoint& perimeter_points)
   }
 }
 
+
+/**
+ *
+ * @param field Destination variable
+ *
+ * Overwrites Destination with PERIMETER and OBSTACLES of GHIANDE of type CGAL::Polygon_with_holes_2
+ *
+ * PERIMETER will be accessible with outer_boundary()
+ *
+ * OBSTACLES will be accessible by iterating holes()
+ */
 inline void get_full_field_as_polygon_wh(Polygon_wh& field)
 {
 
@@ -80,6 +103,32 @@ inline void get_full_field_as_polygon_wh(Polygon_wh& field)
     wkt_count++;
   }while(field_stream.good() && !field_stream.eof());
 
+}
+
+/**
+ *
+ * @param field Destination variable
+ *
+ * Overwrites Destination with PERIMETER and OBSTACLES of an ARBITRARY SHAPE of type CGAL::Polygon_with_holes_2
+ *
+ * PERIMETER will be accessible with outer_boundary()
+ *
+ * OBSTACLES will be accessible by iterating holes()
+ */
+inline void get_simple_polygon_wh(Polygon_wh& field)
+{
+
+  std::ifstream field_stream("data/naive_polygon_wh.wkt");
+  int wkt_count = 0;
+  do
+  {
+    CGAL::IO::read_polygon_WKT(field_stream, field);
+    // if (wkt_count % 100 == 0)
+    std::cout << "wkt_poly_wh: " << wkt_count << std::endl;
+    wkt_count++;
+  }while(field_stream.good() && !field_stream.eof());
+
+}
 }
 
 #endif //TRIANGULATION_2_EXAMPLES_WKT_INPORT_H

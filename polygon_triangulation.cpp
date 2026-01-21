@@ -1,3 +1,7 @@
+//
+// Created by Iacopo Moles on 21/01/26.
+//
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/draw_triangulation_2.h>
@@ -13,50 +17,20 @@
 #include <CGAL/min_quadrilateral_2.h>
 
 #include <iostream>
-#include <fstream>
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
 
 
-#include <wkt_inport.h>
-
-// struct FaceInfo2
-// {
-//   FaceInfo2(){}
-//   int nesting_level;
-//   int group_id;
-//   bool marked = false;
-//   float area = 0.0;
-//   bool is_in_domain(){
-//     return nesting_level%2 == 1;
-//   }
-//   void set_marked(bool mark){
-//     marked = mark;
-//   }
-//   float get_area(){
-//     return area;
-//   }
-//   void set_area(float value){
-//     if (value > 0.0) area = value;
-//   }
-//
-//
-// };
-
+#include <convexification/wkt_inport.h>
+#include <convexification/preprocessing.h>
 
 namespace PS = CGAL::Polyline_simplification_2;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel       K; // EPIC
 typedef CGAL::Triangulation_vertex_base_2<K>                      Vb;
-// typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo2,K>    FbwI;
-// typedef CGAL::Constrained_triangulation_face_base_2<K,FbwI>       CtFb;
-// typedef CGAL::Delaunay_mesh_face_base_2<K>                        DmFb;
-// typedef CGAL::Triangulation_data_structure_2<Vb,FbwI>               TDS;
-// typefef CGAL::Triangulation_face_base_with_info_2<FaceInfo2, K, CtFb> FbMI; //FaceBase of Mesh with Info
-// typedef CGAL::Triangulation_data_structure_2<Vb,FbMI>               TDSMeshwithInfo;
 
-typedef CGAL::Delaunay_mesh_face_base_2<K>                  Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb>        Tds;
+typedef CGAL::Delaunay_mesh_face_base_2<K>                        Fb;
+typedef CGAL::Triangulation_data_structure_2<Vb, Fb>              Tds;
 
 typedef CGAL::Exact_predicates_tag                                Itag;
 typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds>        CDT;
@@ -69,14 +43,12 @@ typedef CDT::Point                                                Point;
 typedef CGAL::Polygon_2<K>                                        Polygon;
 typedef CGAL::Bbox_2                                              bbox_2;
 
-// typedef CGAL::Polygon_with_holes_2<K>                             Polygon_with_holes_2;
-
 typedef CGAL::Polygon_with_holes_2<K>                             Polygon_wh;
 typedef std::vector<Point>                                        MultiPoint;
 typedef std::list<Polygon_wh>                                     Poly_list;
 
 typedef std::unordered_map<Face_handle, bool>                     BooleanFaceMap;
-typedef std::unordered_map<Face_handle, float>                    AreaFaceMap;
+typedef std::unordered_map<Face_handle, double>                   AreaFaceMap;
 
 
 
@@ -84,105 +56,37 @@ typedef PS::Stop_below_count_ratio_threshold                      Stop;
 typedef PS::Squared_distance_cost                                 Cost;
 
 
-void center_coordinates(Polygon_wh& polygon, Polygon_wh& polygon_out)
-{
-  const bbox_2 bounds = polygon.bbox();
-  const double x_min = bounds.xmin();
-  const double y_min = bounds.ymin();
-
-  std::cout << "x_min: " << x_min << "; y_min: " << y_min<< std::endl;
-  CGAL::Aff_transformation_2<K> translate(CGAL::TRANSLATION, CGAL::Vector_2<K>(x_min,y_min));
-
-  const Polygon_wh new_polygon(transform(translate,polygon.outer_boundary()));
-  polygon_out = new_polygon;
-  for (const Polygon& hole : polygon.holes())
-    polygon_out.add_hole(transform(translate,hole));
-
-
-}
-
-// void get_grass(CDT& full_triangulation, const boost::associative_property_map<FaceOwnershipMap> map)
-// {
-//
-//   for ( Face_handle f: full_triangulation.finite_face_handles())
-//   {
-//
-//   }
-//
-//  }
-
-void simplify_obstacles(Polygon_wh& polygon, Polygon_wh& polygon_out, float width, float cost_stop)
-{
-  Cost cost;
-
-  const Polygon_wh temp(polygon.outer_boundary());
-  polygon_out = temp;
-  for (const Polygon& hole: polygon.holes() )
-  {
-    const bbox_2 bounds = hole.bbox();
-    const double delta_x = bounds.xmax() - bounds.xmin();
-    const double delta_y = bounds.ymax() - bounds.ymin();
-    if ((delta_x>width) ||( delta_y>width))
-    {
-      std::cout << "big hole!!" << std::endl;
-       polygon_out.add_hole(PS::simplify(hole, cost, Stop(cost_stop)));
-
-    } else
-    {
-      Polygon bounding_rectangle;
-      CGAL::min_rectangle_2(
-          hole.vertices_begin(), hole.vertices_end(), std::back_inserter(bounding_rectangle));
-      polygon_out.add_hole(bounding_rectangle);
-    }
-  }
-
-}
-
-void get_stats(const CDT& triangualation, const boost::associative_property_map<BooleanFaceMap> map)
+void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
 {
   int face_count = 0;
   int indomain_face_count = 0;
-  for (Face_handle f : triangualation.finite_face_handles())
+  for (Face_handle f : triangulation.finite_face_handles())
   {
     if ( get(map, f) ) ++indomain_face_count;
     ++face_count;
   }
-  std::cout << std::endl << std::endl << "ghiande indomain faces: " << indomain_face_count << std::endl;
-  std::cout << "ghiande total faces: " << face_count << std::endl << std::endl;
+  std::cout << std::endl << std::endl << "polygon indomain faces: " << indomain_face_count << std::endl;
+  std::cout << "polygon total faces: " << face_count << std::endl << std::endl;
 
 
 }
 
-void get_stats(const CDT& triangualation)
+void get_stats(const CDT& triangulation)
 {
   int face_count = 0;
   int indomain_face_count = 0;
-  for (Face_handle f : triangualation.finite_face_handles())
+  for (Face_handle f : triangulation.finite_face_handles())
   {
     if(f->is_in_domain()) ++indomain_face_count;
     ++face_count;
   }
-  std::cout << std::endl << std::endl << "ghiande indomain faces (wo map): " << indomain_face_count << std::endl;
-  std::cout << "ghiande total faces (wo map): " << face_count << std::endl << std::endl;
+  std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << indomain_face_count << std::endl;
+  std::cout << "polygon total faces (w/o map): " << face_count << std::endl << std::endl;
 
 
 }
 
 
-void get_simple_polygon_wh(Polygon_wh& field)
-{
-
-  std::ifstream field_stream("data/naive_polygon_wh.wkt");
-  int wkt_count = 0;
-  do
-  {
-    CGAL::IO::read_polygon_WKT(field_stream, field);
-    // if (wkt_count % 100 == 0)
-    std::cout << "wkt_poly_wh: " << wkt_count << std::endl;
-    wkt_count++;
-  }while(field_stream.good() && !field_stream.eof());
-
-}
 
 void generate_funky_set(const CDT& triangulation, int n)
 {
@@ -198,7 +102,7 @@ void generate_funky_set(const CDT& triangulation, int n)
   }
 }
 
-float get_area(Face_handle f)
+double get_area(Face_handle f)
 {
   Polygon polygon;
   polygon.push_back(f->vertex(0)->point());
@@ -209,7 +113,7 @@ float get_area(Face_handle f)
   return polygon.area();
 }
 
-float get_best_greedy(Face_handle f)
+double get_best_greedy(Face_handle f)
 {
 
 
@@ -217,7 +121,7 @@ float get_best_greedy(Face_handle f)
   triangle.push_back(f->vertex(0)->point());
   triangle.push_back(f->vertex(1)->point());
   triangle.push_back(f->vertex(2)->point());
-  float area = triangle.area();
+  double area = triangle.area();
   // f->set_area(area*100);
   return area;
 
@@ -259,90 +163,92 @@ int main(int argc, char* argv[])
   //std::list<Polygon> polys;
   // from polygon_wkt
 
+  if (false)
+  {
+    MultiPoint perimeter_points;
+    WKT_IO::get_perimeter(perimeter_points);
 
-  MultiPoint perimeter_points;
-  get_perimeter(perimeter_points);
+    MultiPoint mp;
+    WKT_IO::get_obstacles_as_multipoint(mp);
+    Triangulation tri_workplace;
+    tri_workplace.insert(perimeter_points.begin(), perimeter_points.end());
+    tri_workplace.insert(mp.begin(), mp.end() );
+    std::cout << "display naive triangulation" << std::endl << std::endl;
+    CGAL::draw(tri_workplace); // naive triangulation
+  }
 
-  MultiPoint mp;
-  get_obstacles_as_multipoint(mp);
-  Triangulation tri_ghiande;
-  tri_ghiande.insert(perimeter_points.begin(), perimeter_points.end());
-  tri_ghiande.insert(mp.begin(), mp.end() );
-  std::cout << "display naive triangulation" << std::endl << std::endl;
-  CGAL::draw(tri_ghiande); // naive triangulation
-
-
-  CDT cdt_ghiande;
-  Polygon_wh ghiande_pwh_offset, ghiande_pwh, ghiande_pwh_simple_obstacles; // ghiande polygon with holes
-  get_simple_polygon_wh(ghiande_pwh_offset);
-  center_coordinates(ghiande_pwh_offset, ghiande_pwh);
+  CDT cdt_workplace;
+  Polygon_wh workplace_pwh_offset, workplace_pwh, workplace_pwh_simple_obstacles; // workplace polygon with holes
+  WKT_IO::get_full_field_as_polygon_wh(workplace_pwh_offset);
+  PP::center_coordinates(workplace_pwh_offset, workplace_pwh);
   std::cout << "show original field" << std::endl << std::endl;
+  CGAL::draw(workplace_pwh);
 
-  CGAL::draw(ghiande_pwh);
-  simplify_obstacles(ghiande_pwh,ghiande_pwh_simple_obstacles, 1.0, 0.5);
-  ghiande_pwh = ghiande_pwh_simple_obstacles;
-  CGAL::draw(ghiande_pwh);
+  PP::simplify_obstacles_naive(workplace_pwh,workplace_pwh_simple_obstacles, 1.0, 0.5);
+  workplace_pwh = workplace_pwh_simple_obstacles;
+  std::cout << "show simplified field" << std::endl << std::endl;
+  CGAL::draw(workplace_pwh);
 
 
 
 
   // build  constrained triangulation
-  cdt_ghiande.insert(ghiande_pwh.outer_boundary().begin(), ghiande_pwh.outer_boundary().end()); // add the boundary
-  cdt_ghiande.insert_constraint(ghiande_pwh.outer_boundary().begin(), ghiande_pwh.outer_boundary().end(), true); // add the boundary
+  cdt_workplace.insert(workplace_pwh.outer_boundary().begin(), workplace_pwh.outer_boundary().end()); // add the boundary
+  cdt_workplace.insert_constraint(workplace_pwh.outer_boundary().begin(), workplace_pwh.outer_boundary().end(), true); // add the boundary
 
-  for (const Polygon&  hole: ghiande_pwh.holes()) // add the holes
-    cdt_ghiande.insert(hole.vertices_begin(), hole.vertices_end());
+  for (const Polygon&  hole: workplace_pwh.holes()) // add the holes
+    cdt_workplace.insert(hole.vertices_begin(), hole.vertices_end());
 
-  for (const Polygon&  hole: ghiande_pwh.holes()) // add the holes
-    cdt_ghiande.insert_constraint(hole.vertices_begin(), hole.vertices_end(), true);
+  for (const Polygon&  hole: workplace_pwh.holes()) // add the holes
+    cdt_workplace.insert_constraint(hole.vertices_begin(), hole.vertices_end(), true);
 
-  std::cout << "constrained triangulation depth: " << cdt_ghiande.dimension() << std::endl;
+  std::cout << "constrained triangulation depth: " << cdt_workplace.dimension() << std::endl;
   std::cout << "display constrained triangulation" << std::endl << std::endl;
-  CGAL::draw(cdt_ghiande);
+  CGAL::draw(cdt_workplace);
 
 
-  BooleanFaceMap ghiande_in_domain_map;   // unorderedmap / hash-map
+  BooleanFaceMap workplace_in_domain_map;   // unorderedmap / hash-map
 
-  boost::associative_property_map<BooleanFaceMap> in_domain_ghiande(ghiande_in_domain_map); // make it []
+  boost::associative_property_map<BooleanFaceMap> in_domain_workplace(workplace_in_domain_map); // make it []
 
-  CGAL::mark_domain_in_triangulation(cdt_ghiande, in_domain_ghiande);
+  CGAL::mark_domain_in_triangulation(cdt_workplace, in_domain_workplace);
 
-  get_stats(cdt_ghiande, in_domain_ghiande);
-  CGAL::draw(cdt_ghiande, in_domain_ghiande);
+  get_stats(cdt_workplace, in_domain_workplace);
+  CGAL::draw(cdt_workplace, in_domain_workplace);
 
 
-  CGAL::mark_domain_in_triangulation(cdt_ghiande);
+  CGAL::mark_domain_in_triangulation(cdt_workplace);
 
-  get_stats(cdt_ghiande);
-  CGAL::draw(cdt_ghiande);
+  get_stats(cdt_workplace);
+  CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
-  CGAL::refine_Delaunay_mesh_2(cdt_ghiande, CGAL::parameters::criteria(Criteria(b, 5.0)));
-  CGAL::mark_domain_in_triangulation(cdt_ghiande);
+  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(b, 5.0)));
+  CGAL::mark_domain_in_triangulation(cdt_workplace);
 
-  get_stats(cdt_ghiande);
-  CGAL::draw(cdt_ghiande);
+  get_stats(cdt_workplace);
+  CGAL::draw(cdt_workplace);
 
 
   // test marker
   std::cout << "test marker" << std::endl;
-  generate_convex_set(cdt_ghiande, 2);
-  CGAL::draw(cdt_ghiande);
+  generate_convex_set(cdt_workplace, 2);
+  CGAL::draw(cdt_workplace);
 
 
-  // get_stats(cdt_ghiande, in_domain_ghiande);
-  // CGAL::draw(cdt_ghiande, in_domain_ghiande);
+  // get_stats(cdt_workplace, in_domain_workplace);
+  // CGAL::draw(cdt_workplace, in_domain_workplace);
 
-  // int ghiande_indomain_face_count = 0;
-  // int ghiande_face_count = 0;
+  // int workplace_indomain_face_count = 0;
+  // int workplace_face_count = 0;
   //
-  // for (Face_handle f : cdt_ghiande.finite_face_handles())
+  // for (Face_handle f : cdt_workplace.finite_face_handles())
   // {
-  //   if ( get(in_domain_ghiande, f) ) ++ghiande_indomain_face_count;
-  //   ++ghiande_face_count;
+  //   if ( get(in_domain_workplace, f) ) ++workplace_indomain_face_count;
+  //   ++workplace_face_count;
   // }
-  // std::cout << std::endl << std::endl << "ghiande indomain faces: " << ghiande_indomain_face_count << std::endl;
-  // std::cout << "ghiande total faces: " << ghiande_face_count << std::endl << std::endl;
+  // std::cout << std::endl << std::endl << "workplace indomain faces: " << workplace_indomain_face_count << std::endl;
+  // std::cout << "workplace total faces: " << workplace_face_count << std::endl << std::endl;
 
   return 0;
 
