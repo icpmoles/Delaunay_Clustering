@@ -8,7 +8,7 @@ find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
 
 # create a target per cppfile
 create_single_source_cgal_program(polygon_triangulation.cpp)
-
+include_directories(polygon_triangulation include)
 
 if(CGAL_Qt5_FOUND)
   target_link_libraries(polygon_triangulation PUBLIC CGAL::CGAL_Basic_viewer)
