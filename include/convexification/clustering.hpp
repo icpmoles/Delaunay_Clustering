@@ -6,6 +6,7 @@
 #define TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 
 #include "convexification/utils.hpp"
+#include "preprocessing.hpp"
 
 
 typedef struct Face_Description {
@@ -30,10 +31,10 @@ namespace CLS
 {
 
 
-  class Constrained_Delaunay_Triangulation_with_Info
+  class Mesh_Augmented
   {
     public:
-    Constrained_Delaunay_Triangulation_with_Info(CDT cdt)
+    Mesh_Augmented(CDT cdt)
     {
       this->cdt_ = std::move(cdt);
       populate_properties_();
@@ -48,8 +49,8 @@ namespace CLS
 
   private:
 
-
-    void add_vertex_to_cluster(Vertex_handle v1, Vertex_handle v2, Vertex_handle new_vertex, size_t i);
+    void add_face_to_cluster_(const Face_handle f, size_t i);
+    void add_vertex_to_cluster_(Vertex_handle v1, Vertex_handle v2, Vertex_handle new_vertex, size_t i);
 
     void populate_properties_();
 
@@ -64,12 +65,12 @@ namespace CLS
 
   };
 
-  inline Face_Description Constrained_Delaunay_Triangulation_with_Info::get_face_description(size_t i) const
+  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const
   {
     return this->Faces_Properties_[i];
   }
 
-  inline void Constrained_Delaunay_Triangulation_with_Info::iterate()
+  void Mesh_Augmented::iterate()
   {
     double total_area = 0.0;
     for (const Face_handle f : this->cdt_.finite_face_handles())
@@ -87,23 +88,32 @@ namespace CLS
 
     Face_handle first = this->cdt_.finite_faces_begin();
 
+    int cluster_id = 0;
+    add_face_to_cluster_(first, cluster_id);
 
-
-
-
-
-
-
-
-
-
-
-
+    int steps = 0;
+    int steps_max = 5;
+    while (steps < steps_max)
+    {
+      for (const Vertex_handle v : this->Clusters_[cluster_id])
+      {
+        auto s = v->incident_vertices(first);
+        // TODO: Figure out how circulators work
+        // Circulator c;
+        //
+        // CGAL::Triangulation_vertex_base_2<K,CGAL::Triangulation_ds_vertex_base_2<Tds>>::Vertex_circulator container(s);
+        // container.
+        // for (auto i=container.begin(); i<container.end(); i++ )
+        // {
+        //
+        // }
+      }
+    }
 
 
   }
 
-  inline bool Constrained_Delaunay_Triangulation_with_Info::set_face_description(Face_Description description, size_t i)
+  inline bool Mesh_Augmented::set_face_description(Face_Description description, size_t i)
   {
     if (i > Faces_Properties_.size())
       return false;
@@ -111,16 +121,30 @@ namespace CLS
     return true;
   }
 
-  inline void Constrained_Delaunay_Triangulation_with_Info::add_vertex_to_cluster(Vertex_handle v1, Vertex_handle v2,
-                                                                                  Vertex_handle new_vertex, size_t i)
+  inline void Mesh_Augmented::add_face_to_cluster_(const Face_handle f, size_t i)
   {
-    if (Clusters_[i].size() == 0){ // if i-th wasn't initialized already
-
+    Cluster_t cluster = Clusters_[i];
+    if (cluster.empty()){ // if i-th wasn't initialized already:
+      cluster.push_back(f->vertex(0));
+      cluster.push_back(f->vertex(1));
+      cluster.push_back(f->vertex(2));
 
     }
   }
 
-  inline void Constrained_Delaunay_Triangulation_with_Info::populate_properties_()
+  inline void Mesh_Augmented::add_vertex_to_cluster_(const Vertex_handle v1, const Vertex_handle v2,
+                                                                                  const Vertex_handle new_vertex, size_t i)
+  {
+    Cluster_t cluster = Clusters_[i];
+    if (cluster.empty()){ // if i-th wasn't initialized already:
+        cluster.push_back(v1);
+        cluster.push_back(v2);
+        cluster.push_back(new_vertex);
+
+    }
+  }
+
+  inline void Mesh_Augmented::populate_properties_()
   {
     const size_t n_faces = cdt_.number_of_faces();
     Faces_Properties_.clear();
@@ -137,14 +161,14 @@ namespace CLS
     }
   }
 
-  inline size_t Constrained_Delaunay_Triangulation_with_Info::get_vector_idx_(const Face_handle f)
+  inline size_t Mesh_Augmented::get_vector_idx_(const Face_handle f)
   {
     // std::cout << "address : " << std::to_string(f->time_stamp()) <<std::endl;
     Face_Description* description = get_description(f);
     return description->Face_Id;
   }
 
-  inline Face_Description* Constrained_Delaunay_Triangulation_with_Info::get_description(const Face_handle f)
+  inline Face_Description* Mesh_Augmented::get_description(const Face_handle f)
   {
     auto* description = reinterpret_cast<Face_Description*>(f->time_stamp());
     return description;

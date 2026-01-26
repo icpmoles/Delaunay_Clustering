@@ -37,7 +37,7 @@ typedef CGAL::Triangulation_data_structure_2<Vb, Fb>              Tds;
 
 typedef CGAL::Exact_predicates_tag                                Itag;
 typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds>        CDT;
-typedef CGAL::Triangulation_2<K>                                  Triangulation;
+typedef CGAL::Triangulation_2<K, Tds>                             Triangulation;
 typedef CGAL::Delaunay_mesh_size_criteria_2<CDT>                  Criteria;
 typedef CDT::Face_handle                                          Face_handle;
 typedef CDT::Vertex_handle                                        Vertex_handle;
@@ -58,7 +58,7 @@ typedef std::unordered_map<Face_handle, double>                   AreaFaceMap;
 // typedef PS::Stop_below_count_ratio_threshold                      Stop;
 // typedef PS::Squared_distance_cost                                 Cost;
 
-typedef CLS::Constrained_Delaunay_Triangulation_with_Info         CDTwI;
+typedef CLS::Mesh_Augmented         CDTwI;
 
 
 
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
   // test database
 
   // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
-  CDTwI cdt_workplace_wi = CLS::Constrained_Delaunay_Triangulation_with_Info(cdt_workplace);
+  CDTwI cdt_workplace_wi = CLS::Mesh_Augmented(cdt_workplace);
   cdt_workplace_wi.iterate();
   std::cout << "database" << std::endl << std::endl;
 
@@ -249,64 +249,7 @@ int main(int argc, char* argv[])
   if (true) CGAL::draw(cdt_workplace);
 
 
-  // get_stats(cdt_workplace, in_domain_workplace);
-  // CGAL::draw(cdt_workplace, in_domain_workplace);
-
-  // int workplace_indomain_face_count = 0;
-  // int workplace_face_count = 0;
-  //
-  // for (Face_handle f : cdt_workplace.finite_face_handles())
-  // {
-  //   if ( get(in_domain_workplace, f) ) ++workplace_indomain_face_count;
-  //   ++workplace_face_count;
-  // }
-  // std::cout << std::endl << std::endl << "workplace indomain faces: " << workplace_indomain_face_count << std::endl;
-  // std::cout << "workplace total faces: " << workplace_face_count << std::endl << std::endl;
 
   return 0;
 
-
-  // //construct two non-intersecting nested polygons
-  // Polygon polygon1;
-  // polygon1.push_back(Point(10,0));
-  // polygon1.push_back(Point(12,0));
-  // polygon1.push_back(Point(12,2));
-  // polygon1.push_back(Point(11,1.75));
-  // polygon1.push_back(Point(10,2));
-  // Polygon polygon2;
-  // polygon2.push_back(Point(10.5,0.5));
-  // polygon2.push_back(Point(11.5,0.5));
-  // polygon2.push_back(Point(11.5,1.5));
-  // polygon2.push_back(Point(10.5,1.5));
-  //
-  // std::vector<Polygon> holes(1);
-  // holes[0]=polygon2;
-  // Polygon_wh pwh(polygon1,holes.begin(),holes.end());
-  // //Insert the polygons into a constrained triangulation
-  // CDT cdt;
-  // cdt.insert_constraint(polygon1.vertices_begin(), polygon1.vertices_end(), true);
-  // cdt.insert_constraint(polygon2.vertices_begin(), polygon2.vertices_end(), true);
-  // cdt.insert_constraint(Point(10.25, 0.25), Point(10.25, 1.75));
-  //
-  // std::unordered_map<Face_handle, bool> in_domain_map;
-  // boost::associative_property_map< std::unordered_map<Face_handle,bool> >
-  //   in_domain(in_domain_map);
-  //
-  // //Mark facets that are inside the domain bounded by the polygon
-  // CGAL::mark_domain_in_triangulation(cdt, in_domain);
-  //
-  // unsigned int count=0;
-  // for (Face_handle f : cdt.finite_face_handles())
-  // {
-  //   if ( get(in_domain, f) ) ++count;
-  // }
-  //
-  // std::cout << "There are " << count << " faces in the domain." << std::endl;
-  // assert(count > 0);
-  // assert(count < cdt.number_of_faces());
-  //
-  // CGAL::draw(pwh);
-  // CGAL::draw(cdt);
-  // CGAL::draw(cdt, in_domain);
-  // return 0;
 }

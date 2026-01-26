@@ -5,7 +5,7 @@
 #ifndef TRIANGULATION_2_EXAMPLES_UTILS_H
 #define TRIANGULATION_2_EXAMPLES_UTILS_H
 
-
+#include <CGAL/Triangulation_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesher_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
@@ -19,11 +19,12 @@
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/IO/WKT.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>
+#include <CGAL/circulator.h>
+
 
 #include <iostream>
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
-
 
 
 #include <iostream>
@@ -40,7 +41,7 @@ typedef CGAL::Delaunay_mesh_face_base_2<K>                        Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb, Fb>              Tds;
 
 typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds>        CDT;
-typedef CGAL::Triangulation_2<K>                                  Triangulation;
+typedef CGAL::Triangulation_2<K, Tds>                             Triangulation;
 typedef CGAL::Delaunay_mesh_size_criteria_2<CDT>                  Criteria;
 typedef CDT::Face_handle                                          Face_handle;
 typedef CDT::Vertex_handle                                        Vertex_handle;
@@ -64,6 +65,11 @@ typedef PS::Squared_distance_cost                                 Cost;
 typedef std::vector<Vertex_handle>                                Cluster_t;
 typedef std::vector<Cluster_t>                                    MultiCluster_t;
 
+typedef  std::vector<int>::iterator                  I;
+typedef  CGAL::Circulator_from_iterator<I>           Circulator;
+typedef  CGAL::Container_from_circulator<Circulator> Container;
+typedef  Container::iterator                         Iterator;
+
 namespace UTILS
 {
   inline double get_area(Face_handle f)
@@ -72,7 +78,6 @@ namespace UTILS
     polygon.push_back(f->vertex(0)->point());
     polygon.push_back(f->vertex(1)->point());
     polygon.push_back(f->vertex(2)->point());
-
 
     return polygon.area();
   }
