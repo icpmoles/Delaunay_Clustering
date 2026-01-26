@@ -6,17 +6,8 @@
 #define TRIANGULATION_2_EXAMPLES_PREPROCESSING_H
 
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Delaunay_mesh_face_base_2.h>
-#include <CGAL/Delaunay_mesh_size_criteria_2.h>
-#include <CGAL/Polygon_with_holes_2.h>
-#include <CGAL/Polygon_2.h>
-#include <CGAL/Polyline_simplification_2/simplify.h>
-#include <CGAL/min_quadrilateral_2.h>
+#include "convexification/utils.hpp"
 
-#include <iostream>
-#include <fstream>
 
 namespace PP {
 

@@ -21,13 +21,13 @@
 #include <boost/property_map/property_map.hpp>
 
 
-#include "convexification/clustering.h"
-#include "convexification/preprocessing.h"
-#include "convexification/utils.h"
-#include "convexification/wkt_inport.h"
+#include "convexification/clustering.hpp"
+#include "convexification/preprocessing.hpp"
+#include "convexification/utils.hpp"
+#include "convexification/wkt_import.hpp"
 
 
-namespace PS = CGAL::Polyline_simplification_2;
+// namespace PS = CGAL::Polyline_simplification_2;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel       K; // EPIC
 typedef CGAL::Triangulation_vertex_base_2<K>                      Vb;
@@ -55,8 +55,8 @@ typedef std::unordered_map<Face_handle, double>                   AreaFaceMap;
 
 
 
-typedef PS::Stop_below_count_ratio_threshold                      Stop;
-typedef PS::Squared_distance_cost                                 Cost;
+// typedef PS::Stop_below_count_ratio_threshold                      Stop;
+// typedef PS::Squared_distance_cost                                 Cost;
 
 typedef CLS::Constrained_Delaunay_Triangulation_with_Info         CDTwI;
 
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
   // test marker
   std::cout << "test marker" << std::endl;
   generate_convex_set(cdt_workplace, 2);
-  if (view_plot) CGAL::draw(cdt_workplace);
+  if (true) CGAL::draw(cdt_workplace);
 
 
   // get_stats(cdt_workplace, in_domain_workplace);

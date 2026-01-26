@@ -5,42 +5,13 @@
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 #define TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Delaunay_mesh_face_base_2.h>
-#include <CGAL/Delaunay_mesh_size_criteria_2.h>
-#include <CGAL/Polygon_with_holes_2.h>
-#include <CGAL/Polygon_2.h>
-
-#include "utils.h"
+#include "convexification/utils.hpp"
 
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel       K; // EPIC
-typedef CGAL::Triangulation_vertex_base_2<K>                      Vb;
-
-typedef CGAL::Delaunay_mesh_face_base_2<K>                        Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb>              Tds;
-
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds>        CDT;
-typedef CGAL::Triangulation_2<K>                                  Triangulation;
-typedef CGAL::Delaunay_mesh_size_criteria_2<CDT>                  Criteria;
-typedef CDT::Face_handle                                          Face_handle;
-typedef CDT::Vertex_handle                                        Vertex_handle;
-
-typedef CDT::Point                                                Point;
-typedef CGAL::Polygon_2<K>                                        Polygon;
-typedef CGAL::Bbox_2                                              bbox_2;
-
-typedef CGAL::Polygon_with_holes_2<K>                             Polygon_wh;
-typedef std::vector<Point>                                        MultiPoint;
-typedef std::list<Polygon_wh>                                     Poly_list;
-
-typedef std::vector<Face_handle>                                  Cluster_t;
-typedef std::vector<Cluster_t>                                    Clusters_t;
-
-typedef struct {
+typedef struct Face_Description {
   // payload
   size_t Cluster_Id =-1;   // id of the cluster
+  int Distance_walked = 0;
   size_t Face_Id =-1; // id of the face in the vector
   double area=-1.0;                    // area of the face
 
@@ -65,7 +36,7 @@ namespace CLS
       populate_properties_();
     };
 
-    Face_Description get_face_description(size_t i)
+    Face_Description get_face_description(size_t i) const
     {
       return this->Faces_Properties_[i];
     }
@@ -86,6 +57,22 @@ namespace CLS
         }
       }
       std::cout << "total: " << total_area << std::endl;
+
+
+      Face_handle first = this->cdt_.finite_faces_begin();
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     bool set_face_description(Face_Description description, size_t i)
@@ -97,6 +84,14 @@ namespace CLS
     }
 
     private:
+
+      void add_face_to_cluster(Face_handle f, size_t i)
+      {
+        if (Clusters_[i].size() == 0){ // if i-th wasn't initialized already
+
+
+        }
+      }
 
       void populate_properties_()
       {
@@ -132,7 +127,7 @@ namespace CLS
 
       CDT cdt_;
       std::vector<Face_Description> Faces_Properties_;
-      Clusters_t Clusters_;
+      MultiCluster_t Clusters_;
 
   };
 
