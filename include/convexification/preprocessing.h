@@ -75,9 +75,6 @@ inline void center_coordinates(Polygon_wh& polygon, Polygon_wh& polygon_out)
 
 }
 
-
-  // TODO: small obstables are simplified together with perimeter and big obs. But then we are adding them again as bounded boxes.
-  // fix: remove small simplified obstacles and readd just the bounding boxes
 /**
  *
  * @param polygon Input Polygon
@@ -96,18 +93,20 @@ inline void simplify_obstacles(const Polygon_wh& polygon, Polygon_wh& polygon_ou
 {
   const Cost cost;
   // const Polygon_wh temp(polygon.outer_boundary());
-  const Polygon_wh temp(PS::simplify(polygon, cost, Stop(cost_stop)));
-  polygon_out = temp;
-  for (const Polygon& hole: polygon_out.holes() )
+  // const Polygon_wh temp(PS::simplify(polygon, cost, Stop(cost_stop)));
+  polygon_out =  Polygon_wh(PS::simplify(polygon, cost, Stop(cost_stop)));
+  // for (const Polygon& hole: polygon_out.holes() )
+  for (auto hole=polygon_out.holes_begin(); hole!= polygon_out.holes_end(); ++hole)
   {
-    const bbox_2 bounds = hole.bbox();
+    const bbox_2 bounds = hole->bbox();
     const double delta_x = bounds.xmax() - bounds.xmin();
     const double delta_y = bounds.ymax() - bounds.ymin();
     if ((delta_x<width) && ( delta_y<width))
     {
       Polygon bounding_rectangle;
       CGAL::min_rectangle_2(
-          hole.vertices_begin(), hole.vertices_end(), std::back_inserter(bounding_rectangle));
+          hole->vertices_begin(), hole->vertices_end(), std::back_inserter(bounding_rectangle));
+      polygon_out.erase_hole(hole);
       polygon_out.add_hole(bounding_rectangle);
     }
   }

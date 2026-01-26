@@ -2,27 +2,30 @@
 // Created by Iacopo Moles on 21/01/26.
 //
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/draw_triangulation_2.h>
 #include <CGAL/Delaunay_mesher_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_size_criteria_2.h>
-#include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/draw_polygon_with_holes_2.h>
+#include <CGAL/draw_triangulation_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/mark_domain_in_triangulation.h>
+#include <CGAL/min_quadrilateral_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/IO/WKT.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>
-#include <CGAL/min_quadrilateral_2.h>
 
 #include <iostream>
 #include <unordered_map>
 #include <boost/property_map/property_map.hpp>
 
 
-#include <convexification/wkt_inport.h>
-#include <convexification/preprocessing.h>
+#include "convexification/clustering.h"
+#include "convexification/preprocessing.h"
+#include "convexification/utils.h"
+#include "convexification/wkt_inport.h"
+
 
 namespace PS = CGAL::Polyline_simplification_2;
 
@@ -54,6 +57,9 @@ typedef std::unordered_map<Face_handle, double>                   AreaFaceMap;
 
 typedef PS::Stop_below_count_ratio_threshold                      Stop;
 typedef PS::Squared_distance_cost                                 Cost;
+
+typedef CLS::Constrained_Delaunay_Triangulation_with_Info         CDTwI;
+
 
 
 void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
@@ -94,24 +100,15 @@ void generate_funky_set(const CDT& triangulation, int n)
   for (const Face_handle f : triangulation.finite_face_handles())
   {
     if (fa%n==0 && f->is_in_domain())
-      f->set_marked(true);
+      f->set_time_stamp(true);
     else
-      f->set_marked(false);
+      f->set_time_stamp(false);
 
     fa++;
   }
 }
 
-double get_area(Face_handle f)
-{
-  Polygon polygon;
-  polygon.push_back(f->vertex(0)->point());
-  polygon.push_back(f->vertex(1)->point());
-  polygon.push_back(f->vertex(2)->point());
 
-
-  return polygon.area();
-}
 
 double get_best_greedy(Face_handle f)
 {
@@ -121,9 +118,8 @@ double get_best_greedy(Face_handle f)
   triangle.push_back(f->vertex(0)->point());
   triangle.push_back(f->vertex(1)->point());
   triangle.push_back(f->vertex(2)->point());
-  double area = triangle.area();
   // f->set_area(area*100);
-  return area;
+  return triangle.area();
 
 }
 
@@ -141,22 +137,27 @@ void generate_convex_set(const CDT& triangulation, int concave_steps)
   // typedef std::list<Face_handle> face_group;
   // std::map<int, face_group> convex_sets;
   // Face_handle face = triangulation.all_faces_begin();
+
+
   for (Face_handle f : triangulation.finite_face_handles())
   {
     get_best_greedy(f);
   }
 
-  for (Face_handle f : triangulation.finite_face_handles())
-  {
-    retrieve_best(f);
-  }
+  // for (Face_handle f : triangulation.finite_face_handles())
+  // {
+  //   retrieve_best(f);
+  // }
 
 
 
 }
 
+
+
 int main(int argc, char* argv[])
 {
+  bool view_plot=false;
 
   float b ((argc>1)?std::stof(argv[1]):1.4);
   std::cout << "b: " << b << " , B: " << std::sqrt(0.25/b) << " , alpha: " << std::asin(std::sqrt(b)) * 180.0 / 3.141592653 << std::endl;
@@ -174,20 +175,25 @@ int main(int argc, char* argv[])
     tri_workplace.insert(perimeter_points.begin(), perimeter_points.end());
     tri_workplace.insert(mp.begin(), mp.end() );
     std::cout << "display naive triangulation" << std::endl << std::endl;
-    CGAL::draw(tri_workplace); // naive triangulation
+    if (view_plot) CGAL::draw(tri_workplace); // naive triangulation
   }
 
   CDT cdt_workplace;
   Polygon_wh workplace_pwh_offset, workplace_pwh, workplace_pwh_simple_obstacles; // workplace polygon with holes
-  WKT_IO::get_full_field_as_polygon_wh(workplace_pwh_offset);
+
+  // false for simple polygon
+  if (false)
+    WKT_IO::get_full_field_as_polygon_wh(workplace_pwh_offset);
+  else
+    WKT_IO::get_simple_polygon_wh(workplace_pwh_offset);
   PP::center_coordinates(workplace_pwh_offset, workplace_pwh);
   std::cout << "show original field" << std::endl << std::endl;
-  CGAL::draw(workplace_pwh);
+  if (view_plot) CGAL::draw(workplace_pwh);
 
   PP::simplify_obstacles_naive(workplace_pwh,workplace_pwh_simple_obstacles, 1.0, 0.5);
   workplace_pwh = workplace_pwh_simple_obstacles;
   std::cout << "show simplified field" << std::endl << std::endl;
-  CGAL::draw(workplace_pwh);
+  if (view_plot) CGAL::draw(workplace_pwh);
 
 
 
@@ -204,7 +210,7 @@ int main(int argc, char* argv[])
 
   std::cout << "constrained triangulation depth: " << cdt_workplace.dimension() << std::endl;
   std::cout << "display constrained triangulation" << std::endl << std::endl;
-  CGAL::draw(cdt_workplace);
+  if (view_plot) CGAL::draw(cdt_workplace);
 
 
   BooleanFaceMap workplace_in_domain_map;   // unorderedmap / hash-map
@@ -214,26 +220,33 @@ int main(int argc, char* argv[])
   CGAL::mark_domain_in_triangulation(cdt_workplace, in_domain_workplace);
 
   get_stats(cdt_workplace, in_domain_workplace);
-  CGAL::draw(cdt_workplace, in_domain_workplace);
+  if (view_plot) CGAL::draw(cdt_workplace, in_domain_workplace);
 
 
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  CGAL::draw(cdt_workplace);
+  if (view_plot)  CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
   CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(b, 5.0)));
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  CGAL::draw(cdt_workplace);
+  if (view_plot) CGAL::draw(cdt_workplace);
 
+
+  // test database
+
+  // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
+  CDTwI cdt_workplace_wi = CLS::Constrained_Delaunay_Triangulation_with_Info(cdt_workplace);
+  cdt_workplace_wi.iterate();
+  std::cout << "database" << std::endl << std::endl;
 
   // test marker
   std::cout << "test marker" << std::endl;
   generate_convex_set(cdt_workplace, 2);
-  CGAL::draw(cdt_workplace);
+  if (view_plot) CGAL::draw(cdt_workplace);
 
 
   // get_stats(cdt_workplace, in_domain_workplace);
