@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 {
   bool view_plot=false;
 
-  float b ((argc>1)?std::stof(argv[1]):1.4);
+  float b ((argc>1)?std::stof(argv[1]):0.4);
   std::cout << "b: " << b << " , B: " << std::sqrt(0.25/b) << " , alpha: " << std::asin(std::sqrt(b)) * 180.0 / 3.141592653 << std::endl;
   //std::list<Polygon> polys;
   // from polygon_wkt
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
   if (view_plot)  CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
-  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(b, 5.0)));
+  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(b, 6.0)));
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
