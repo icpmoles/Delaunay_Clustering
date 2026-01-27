@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
   Polygon_wh workplace_pwh_offset, workplace_pwh, workplace_pwh_simple_obstacles; // workplace polygon with holes
 
   // false for simple polygon
+  // true for ghiande
   if (false)
     WKT_IO::get_full_field_as_polygon_wh(workplace_pwh_offset);
   else

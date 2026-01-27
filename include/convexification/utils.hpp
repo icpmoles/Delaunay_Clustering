@@ -65,10 +65,11 @@ typedef PS::Squared_distance_cost                                 Cost;
 typedef std::vector<Vertex_handle>                                Cluster_t;
 typedef std::vector<Cluster_t>                                    MultiCluster_t;
 
-typedef  std::vector<int>::iterator                  I;
-typedef  CGAL::Circulator_from_iterator<I>           Circulator;
-typedef  CGAL::Container_from_circulator<Circulator> Container;
-typedef  Container::iterator                         Iterator;
+
+
+typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds>           Vertex_Circulator;
+typedef CGAL::Container_from_circulator<Vertex_Circulator>        Vertex_Container;
+typedef Vertex_Container::iterator                                Iterator;
 
 namespace UTILS
 {
