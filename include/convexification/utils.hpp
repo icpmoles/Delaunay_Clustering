@@ -66,10 +66,9 @@ typedef std::vector<Vertex_handle>                                Cluster_t;
 typedef std::vector<Cluster_t>                                    MultiCluster_t;
 
 
-
-typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds>           Vertex_Circulator;
-typedef CGAL::Container_from_circulator<Vertex_Circulator>        Vertex_Container;
-typedef Vertex_Container::iterator                                Iterator;
+typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> Vertex_Circulator;
+typedef CGAL::Container_from_circulator<Vertex_Circulator> Vertex_Container;
+typedef Vertex_Container::iterator Iterator;
 
 namespace UTILS
 {
