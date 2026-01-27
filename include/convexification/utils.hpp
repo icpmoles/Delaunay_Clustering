@@ -69,23 +69,24 @@ typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> Vertex_Circulator;
 typedef CGAL::Container_from_circulator<Vertex_Circulator> Vertex_Container;
 typedef Vertex_Container::iterator Iterator;
 
-namespace UTILS {
-inline double get_area (Face_handle f)
+namespace UTILS
 {
-  Polygon polygon;
-  polygon.push_back (f->vertex (0)->point ());
-  polygon.push_back (f->vertex (1)->point ());
-  polygon.push_back (f->vertex (2)->point ());
+  inline double get_area(Face_handle f)
+  {
+    Polygon polygon;
+    polygon.push_back(f->vertex(0)->point());
+    polygon.push_back(f->vertex(1)->point());
+    polygon.push_back(f->vertex(2)->point());
 
-  return polygon.area ();
-}
+    return polygon.area();
+  }
 
-inline void print_triangle_vertices (const Face_handle f)
-{
-  std::cout << "1) " << f->vertex (0)->point () << std::endl;
-  std::cout << "2) " << f->vertex (1)->point () << std::endl;
-  std::cout << "3) " << f->vertex (2)->point () << std::endl;
-}
+  inline void print_triangle_vertices(const Face_handle f)
+  {
+    std::cout << "1) " << f->vertex(0)->point() << std::endl;
+    std::cout << "2) " << f->vertex(1)->point() << std::endl;
+    std::cout << "3) " << f->vertex(2)->point() << std::endl;
+  }
 
 } // namespace UTILS
 
