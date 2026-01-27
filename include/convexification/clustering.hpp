@@ -155,12 +155,11 @@ namespace CLS
   inline Cluster_t Mesh_Augmented::add_vertex_to_cluster_(Cluster_t& cluster, Cluster_t& v_in, size_t idx_preceding,
                                                           size_t idx_following)
   {
-    if (idx_following<idx_preceding) //
+    if(idx_following < idx_preceding) //
     {
-
-    } else
+    }
+    else
     {
-
     }
   }
 
