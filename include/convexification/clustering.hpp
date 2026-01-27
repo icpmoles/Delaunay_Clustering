@@ -8,12 +8,13 @@
 #include "convexification/utils.hpp"
 
 
-typedef struct Face_Description {
+typedef struct Face_Description
+{
   // payload
-  size_t Cluster_Id =-1;   // id of the cluster
+  size_t Cluster_Id = -1; // id of the cluster
 
-  size_t Face_Id =-1; // id of the face in the vector
-  double area=-1.0;                    // area of the face
+  size_t Face_Id = -1; // id of the face in the vector
+  double area = -1.0; // area of the face
 
   // Check if assigned
   bool area_Calculated = false; // whether the area is calculated
@@ -22,7 +23,7 @@ typedef struct Face_Description {
 
   // walk metadata
 
-  unsigned Distance_walked = 0;  //how many greedy steps without convexity
+  unsigned Distance_walked = 0; // how many greedy steps without convexity
 
 } Face_Description;
 
@@ -32,7 +33,13 @@ namespace CLS
 
   class Mesh_Augmented
   {
-    public:
+  public:
+    /**
+     *
+     * @param cdt Starting Constrained Delauney Triangulation
+     * The New Object of the class will keep a copy inside.
+     * It will automatically calculate the area of the internal triangles.
+     */
     Mesh_Augmented(CDT cdt)
     {
       this->cdt_ = std::move(cdt);
@@ -46,13 +53,20 @@ namespace CLS
      */
     [[nodiscard]] Face_Description get_face_description(size_t i) const;
 
-
+    /**
+     * Where the magic happens.
+     */
     void iterate();
 
+    /**
+     *
+     * @param description Struct containing the new description of the i-th face
+     * @param i face_id that it's replacing
+     * @return true if the face exists, false if there's an error assigning
+     */
     bool set_face_description(Face_Description description, size_t i);
 
   private:
-
     void add_face_to_cluster_(Face_handle f, size_t i);
     void add_vertex_to_cluster_(Vertex_handle v1, Vertex_handle v2, Vertex_handle new_vertex, size_t i) const;
 
@@ -70,10 +84,7 @@ namespace CLS
     MultiCluster_t Clusters_;
   };
 
-  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const
-  {
-    return this->Faces_Properties_[i];
-  }
+  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const { return this->Faces_Properties_[i]; }
 
   inline void Mesh_Augmented::iterate()
   {
@@ -85,7 +96,6 @@ namespace CLS
         Face_Description* description = get_description_(f);
         // std::cout << description->Face_Id << "th: " << description->area << std::endl;
         total_area += description->area;
-
       }
     }
     std::cout << "total: " << total_area << std::endl;
@@ -105,7 +115,8 @@ namespace CLS
 
     int steps = 0;
     int steps_max = 5;
-    do {
+    do
+    {
       for (const Vertex_handle v : this->Clusters_[cluster_id])
       {
         std::cout << "vertex of interest: " << v->point() << std::endl;
@@ -140,11 +151,11 @@ namespace CLS
     {
       Clusters_.resize(i + 1);
     }
-    if (cluster.empty()){ // if i-th wasn't initialized already:
+    if (cluster.empty())
+    { // if i-th wasn't initialized already:
       cluster.push_back(f->vertex(0));
       cluster.push_back(f->vertex(1));
       cluster.push_back(f->vertex(2));
-
     }
 
     Clusters_[i] = std::move(cluster);
@@ -154,11 +165,11 @@ namespace CLS
                                                      const Vertex_handle new_vertex, const size_t i) const
   {
     Cluster_t cluster = Clusters_[i];
-    if (cluster.empty()){ // if i-th wasn't initialized already:
-        cluster.push_back(v1);
-        cluster.push_back(v2);
-        cluster.push_back(new_vertex);
-
+    if (cluster.empty())
+    { // if i-th wasn't initialized already:
+      cluster.push_back(v1);
+      cluster.push_back(v2);
+      cluster.push_back(new_vertex);
     }
   }
 
@@ -204,6 +215,6 @@ namespace CLS
     auto* description = reinterpret_cast<Face_Description*>(f->time_stamp());
     return description;
   }
-}
+} // namespace CLS
 
-#endif //TRIANGULATION_2_EXAMPLES_CLUSTERING_H
+#endif // TRIANGULATION_2_EXAMPLES_CLUSTERING_H
