@@ -64,10 +64,15 @@ typedef PS::Squared_distance_cost Cost;
 typedef std::vector<Vertex_handle> Cluster_t;
 typedef std::vector<Cluster_t> MultiCluster_t;
 
+typedef CGAL::Triangulation_ds_face_circulator_2<Tds> Face_Circulator;
+typedef CGAL::Container_from_circulator<Face_Circulator> Face_Container;
+
+typedef CGAL::Triangulation_ds_edge_circulator_2<Tds> Edge_Circulator;
+typedef CGAL::Container_from_circulator<Edge_Circulator> Edge_Container;
 
 typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> Vertex_Circulator;
 typedef CGAL::Container_from_circulator<Vertex_Circulator> Vertex_Container;
-typedef Vertex_Container::iterator Iterator;
+typedef Vertex_Container::iterator Vertex_Iterator;
 
 namespace UTILS
 {
@@ -83,9 +88,9 @@ namespace UTILS
 
   inline void print_triangle_vertices(const Face_handle f)
   {
-    std::cout << "1) " << f->vertex(0)->point() << std::endl;
-    std::cout << "2) " << f->vertex(1)->point() << std::endl;
-    std::cout << "3) " << f->vertex(2)->point() << std::endl;
+    std::cout << "1st Vertex " << f->vertex(0)->point() << std::endl;
+    std::cout << "2nd Vertex " << f->vertex(1)->point() << std::endl;
+    std::cout << "3rd Vertex " << f->vertex(2)->point() << std::endl;
   }
 
 } // namespace UTILS

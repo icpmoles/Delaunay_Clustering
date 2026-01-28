@@ -7,6 +7,9 @@
 
 #include "convexification/utils.hpp"
 
+#define OBSTACLE_VALUE UINT_MAX
+#define UNEXPLORED_VALUE UINT_MAX / 2
+
 
 typedef struct Face_Description
 {
@@ -23,7 +26,7 @@ typedef struct Face_Description
 
   // walk metadata
 
-  unsigned Distance = UINT_MAX; // how many greedy steps without convexity
+  unsigned Distance = UNEXPLORED_VALUE; // how many greedy steps without convexity
 
 } Face_Description;
 
@@ -77,7 +80,7 @@ namespace CLS
 
     void populate_properties_();
 
-    bool get_inlier_face_(Face_handle& destination);
+    bool get_inlier_face_(Face_handle& destination) const;
 
     static size_t get_vector_idx_(Face_handle f);
 
@@ -88,7 +91,13 @@ namespace CLS
 
     void show_map_(size_t cluster_id) const;
 
-    void print_face_info(Face_handle) const;
+    void print_face_info(Face_handle, bool print_vertexes = false) const;
+
+    /**
+     * Resets the Distance value of the unassigned faces.
+     * @return number of faces still not assigned to a cluster
+     */
+    size_t reset_unassigned_faces();
 
     CDT cdt_;
     std::vector<Face_Description> Faces_Properties_;
@@ -106,6 +115,10 @@ namespace CLS
       {
         Face_Description* description = get_face_description_(f);
         // std::cout << description->Face_Id << "th: " << description->area << std::endl;
+        // TODO: Iterate edge
+        // https://doc.cgal.org/5.6.3/TDS_2/classTriangulationDataStructure__2.html#a35f5c887003a6d08b6cef13228c89bd6
+        // somehow
+        // TODO: reorient cluster list to start from arbitrary point
         total_area += description->Area;
       }
     }
@@ -125,17 +138,41 @@ namespace CLS
 
     show_map_(0);
     print_face_info(first_face);
-    get_face_description_(first_face)->is_Cluster_Assigned = true;
-    get_face_description_(first_face)->Cluster_Id = 0;
-    print_face_info(first_face);
-    show_map_(0);
 
 
     int cluster_id = 0;
     add_face_to_cluster_(first_face, cluster_id);
 
+
+    show_map_(0);
+    print_face_info(first_face);
+
     int steps = 0;
-    int steps_max = 5;
+    int steps_max = 1;
+
+    do
+    {
+      std::cout << std::endl << "step: " << steps << std::endl;
+      for(const Vertex_handle v : this->Clusters_[cluster_id])
+      {
+        std::cout << "vertex of interest: " << v->point() << std::endl;
+        Face_Circulator first_f = v->incident_faces();
+        Face_Circulator circ = first_f;
+        int face_counter = 0;
+        do
+        {
+          // std::cout << face_counter << "th incident vertex:" << circ->vertex(1)->point() << std::endl;
+          print_face_info(circ, true);
+          std::cout << std::endl << std::endl;
+          face_counter++;
+        }
+        while(++circ != first_f);
+        std::cout << std::endl << std::endl;
+      }
+    }
+    while(++steps < steps_max);
+
+    /*
     do
     {
       for(const Vertex_handle v : this->Clusters_[cluster_id])
@@ -154,6 +191,7 @@ namespace CLS
       }
     }
     while(++steps < steps_max);
+    */
   }
 
   inline bool Mesh_Augmented::set_face_description(Face_Description description, size_t i)
@@ -214,6 +252,9 @@ namespace CLS
     }
 
     Clusters_[i] = std::move(cluster);
+    get_face_description_(f)->Cluster_Id = i;
+    get_face_description_(f)->is_Cluster_Assigned = true;
+    get_face_description_(f)->Distance = 0;
   }
 
   inline void Mesh_Augmented::add_vertex_to_cluster_(const Vertex_handle v1, const Vertex_handle v2,
@@ -234,10 +275,13 @@ namespace CLS
     Faces_Properties_.clear();
     Faces_Properties_.reserve(n_faces);
     size_t i = 0;
-    for(const Face_handle f : cdt_.finite_face_handles())
+    for(const Face_handle f : this->cdt_.finite_face_handles())
     {
-      const double area = UTILS::get_area(f);
-      Faces_Properties_.push_back({.Face_Id = i, .Area = area, .is_Area_Calculated = true, .is_Face_Assigned = true});
+      Faces_Properties_.push_back({.Face_Id = i,
+                                   .Area = UTILS::get_area(f),
+                                   .is_Area_Calculated = true,
+                                   .is_Face_Assigned = true,
+                                   .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
 
       f->set_time_stamp(reinterpret_cast<std::size_t>(&Faces_Properties_[i]));
 
@@ -245,7 +289,7 @@ namespace CLS
     }
   }
 
-  inline bool Mesh_Augmented::get_inlier_face_(Face_handle& destination)
+  inline bool Mesh_Augmented::get_inlier_face_(Face_handle& destination) const
   {
     Face_handle tentative = this->cdt_.finite_faces_begin();
     const Face_handle last = this->cdt_.finite_faces_end();
@@ -262,12 +306,7 @@ namespace CLS
     return false;
   }
 
-  inline size_t Mesh_Augmented::get_vector_idx_(const Face_handle f)
-  {
-    // std::cout << "address : " << std::to_string(f->time_stamp()) <<std::endl;
-    Face_Description* description = get_face_description_(f);
-    return description->Face_Id;
-  }
+  inline size_t Mesh_Augmented::get_vector_idx_(const Face_handle f) { return get_face_description_(f)->Face_Id; }
 
   inline Face_Description* Mesh_Augmented::get_face_description_(const Face_handle f)
   {
@@ -303,13 +342,30 @@ namespace CLS
     CGAL::draw(cdt_, in_free_space);
   }
 
-  inline void Mesh_Augmented::print_face_info(Face_handle f) const
+  inline void Mesh_Augmented::print_face_info(const Face_handle f, bool print_vertexes) const
   {
     Face_Description* fd = get_face_description_(f);
     std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" << std::endl;
     std::cout << "Cluster_Id: " << fd->Cluster_Id << " (" << fd->is_Cluster_Assigned << ")" << std::endl;
     std::cout << "Area: " << fd->Area << " (" << fd->is_Area_Calculated << ")" << std::endl;
-    std::cout << "Distance: " << fd->Distance << std::endl;
+    std::cout << "Distance: " << fd->Distance << " (" << f->is_in_domain() << ")" << std::endl;
+    if(print_vertexes)
+      UTILS::print_triangle_vertices(f);
+  }
+
+  size_t Mesh_Augmented::reset_unassigned_faces()
+  {
+    size_t i = 0;
+    for(const Face_handle f : this->cdt_.finite_face_handles())
+    {
+      if(get_face_description_(f)->is_Cluster_Assigned == false)
+      {
+        i++;
+        get_face_description_(f)->Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE;
+      }
+    }
+
+    return i;
   }
 
 } // namespace CLS
