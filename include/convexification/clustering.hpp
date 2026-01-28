@@ -95,10 +95,7 @@ namespace CLS
     MultiCluster_t Clusters_;
   };
 
-  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const
-  {
-    return this->Faces_Properties_[i];
-  }
+  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const { return this->Faces_Properties_[i]; }
 
   inline void Mesh_Augmented::iterate()
   {
@@ -279,7 +276,7 @@ namespace CLS
 
 
   bool Mesh_Augmented::is_still_convex_(const Cluster_t cluster, Vertex_handle v_in, Vertex_handle v_preceding,
-                                       Vertex_handle v_following) {
+                                        Vertex_handle v_following) {
 
 
   };
@@ -292,28 +289,26 @@ namespace CLS
 
     for(const Face_handle f : cdt_.all_face_handles())
     {
-      if (f->is_in_domain() && get_face_description_(f)->Cluster_Id == cluster_id)
+      if(f->is_in_domain() && get_face_description_(f)->Cluster_Id == cluster_id)
       {
         in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
-      } else
+      }
+      else
       {
         in_free_space_map.insert(std::pair<Face_handle, bool>(f, false));
-
       }
-
     }
     const boost::associative_property_map<FaceOwnershipMap> in_free_space(in_free_space_map);
 
-    CGAL::draw(cdt_,in_free_space);
-
+    CGAL::draw(cdt_, in_free_space);
   }
 
   inline void Mesh_Augmented::print_face_info(Face_handle f) const
   {
     Face_Description* fd = get_face_description_(f);
-    std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" <<std::endl;
+    std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" << std::endl;
     std::cout << "Cluster_Id: " << fd->Cluster_Id << " (" << fd->is_Cluster_Assigned << ")" << std::endl;
-    std::cout << "Area: " << fd->Area << " (" << fd->is_Area_Calculated << ")" <<  std::endl;
+    std::cout << "Area: " << fd->Area << " (" << fd->is_Area_Calculated << ")" << std::endl;
     std::cout << "Distance: " << fd->Distance << std::endl;
   }
 
