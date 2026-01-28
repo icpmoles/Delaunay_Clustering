@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
   // test marker
   std::cout << "test marker" << std::endl;
   generate_convex_set(cdt_workplace, 2);
-  if(true)
+  if(view_plot)
     CGAL::draw(cdt_workplace);
 
 
