@@ -67,7 +67,7 @@ namespace CLS
      * @param i face_id that it's replacing
      * @return true if the face exists, false if there's an error assigning
      */
-    bool set_face_description(Face_Description description, size_t i);
+    bool set_face_description(const Face_Description& description, size_t i);
 
   private:
     void add_face_to_cluster_(Face_handle f, size_t i);
@@ -82,16 +82,16 @@ namespace CLS
 
     bool get_inlier_face_(Face_handle& destination) const;
 
-    static size_t get_vector_idx_(Face_handle f);
+    size_t get_vector_idx_(Face_handle f);
 
-    static Face_Description* get_face_description_(Face_handle f);
+    Face_Description* get_face_description_(Face_handle f);
 
 
     bool is_still_convex_(Cluster_t cluster, Vertex_handle v_in, Vertex_handle v_preceding, Vertex_handle v_following);
 
-    void show_map_(size_t cluster_id) const;
+    void show_map_(size_t cluster_id);
 
-    void print_face_info(Face_handle, bool print_vertexes = false) const;
+    void print_face_info(Face_handle, bool print_vertexes = false);
 
     /**
      * Resets the Distance value of the unassigned faces.
@@ -194,11 +194,11 @@ namespace CLS
     */
   }
 
-  inline bool Mesh_Augmented::set_face_description(Face_Description description, size_t i)
+  inline bool Mesh_Augmented::set_face_description(const Face_Description& description, size_t i)
   {
     if(i > Faces_Properties_.size())
       return false;
-    Faces_Properties_[i] = description;
+    Faces_Properties_.at(i) = description;
     return true;
   }
 
@@ -251,7 +251,7 @@ namespace CLS
       cluster.push_back(f->vertex(2));
     }
 
-    Clusters_[i] = std::move(cluster);
+    Clusters_.at(i) = std::move(cluster);
     get_face_description_(f)->Cluster_Id = i;
     get_face_description_(f)->is_Cluster_Assigned = true;
     get_face_description_(f)->Distance = 0;
@@ -260,7 +260,7 @@ namespace CLS
   inline void Mesh_Augmented::add_vertex_to_cluster_(const Vertex_handle v1, const Vertex_handle v2,
                                                      const Vertex_handle new_vertex, const size_t i) const
   {
-    Cluster_t cluster = Clusters_[i];
+    Cluster_t cluster = Clusters_.at(i);
     if(cluster.empty())
     { // if i-th wasn't initialized already:
       cluster.push_back(v1);
@@ -283,7 +283,7 @@ namespace CLS
                                    .is_Face_Assigned = true,
                                    .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
 
-      f->set_time_stamp(reinterpret_cast<std::size_t>(&Faces_Properties_[i]));
+      f->set_time_stamp(i);
 
       i++;
     }
@@ -310,7 +310,9 @@ namespace CLS
 
   inline Face_Description* Mesh_Augmented::get_face_description_(const Face_handle f)
   {
-    return reinterpret_cast<Face_Description*>(f->time_stamp());
+
+    const size_t i = f->time_stamp();
+    return &Faces_Properties_[i];
   }
 
 
@@ -321,7 +323,7 @@ namespace CLS
   };
 
 
-  inline void Mesh_Augmented::show_map_(size_t cluster_id) const
+  inline void Mesh_Augmented::show_map_(size_t cluster_id)
   {
     typedef std::unordered_map<Face_handle, bool> FaceOwnershipMap;
     FaceOwnershipMap in_free_space_map;
@@ -342,7 +344,7 @@ namespace CLS
     CGAL::draw(cdt_, in_free_space);
   }
 
-  inline void Mesh_Augmented::print_face_info(const Face_handle f, bool print_vertexes) const
+  inline void Mesh_Augmented::print_face_info(const Face_handle f, bool print_vertexes)
   {
     Face_Description* fd = get_face_description_(f);
     std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" << std::endl;
