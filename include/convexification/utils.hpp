@@ -44,6 +44,8 @@ typedef CGAL::Triangulation_2<K, Tds> Triangulation;
 typedef CGAL::Delaunay_mesh_size_criteria_2<CDT> Criteria;
 typedef CDT::Face_handle Face_handle;
 typedef CDT::Vertex_handle Vertex_handle;
+typedef CDT::Edge Edge;
+
 
 typedef CDT::Point Point;
 typedef CGAL::Polygon_2<K> Polygon;
@@ -61,8 +63,26 @@ typedef PS::Stop_below_count_ratio_threshold Stop;
 typedef PS::Squared_distance_cost Cost;
 
 
-typedef std::vector<Vertex_handle> Cluster_t;
-typedef std::vector<Cluster_t> MultiCluster_t;
+/**
+ * List of vertexes (in CCW order)
+ */
+typedef std::vector<Vertex_handle> MultiVertex_t;
+
+/**
+ * List of Edges (in CCW order)
+ */
+typedef std::vector<Edge> MultiEdge_t;
+
+
+/**
+ * List of Edges (in CCW order)
+ */
+typedef std::vector<Face_handle> MultiFace_t;
+
+// /**
+//  * Collection of Clusters
+//  */
+// typedef std::vector<Cluster_t> MultiCluster_t;
 
 typedef CGAL::Triangulation_ds_face_circulator_2<Tds> Face_Circulator;
 typedef CGAL::Container_from_circulator<Face_Circulator> Face_Container;
