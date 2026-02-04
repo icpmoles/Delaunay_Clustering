@@ -4,41 +4,42 @@
 
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
 #define TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
+#include "Cluster/Cluster_Circulator.hpp"
 #include "convexification/utils.hpp"
 
-
-typedef struct Cluster_t
-{
-  MultiVertex_t vertexes;
-  MultiEdge_t edges;
-  MultiFace_t faces;
-  bool success;
-} Cluster_t;
+// typedef struct Cluster_t
+// {
+//   MultiVertex_t vertexes;
+//   MultiEdge_t edges;
+//   MultiFace_t faces;
+//   bool success;
+// } Cluster_t;
 
 
 namespace CC
 {
-  class Cluster_Container
+  class Cluster
   {
   public:
-    Cluster_Container(Face_handle f);
+    Cluster(Face_handle f);
     int LocateVertex(Vertex_handle v);
     bool ShiftStart(Vertex_handle v_start);
-    bool Commit(Cluster_t new_cluster);
-    Cluster_t AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following);
-    Cluster_t AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding, Vertex_handle v_following);
-    Cluster_t AddFaces(MultiFace_t faces);
-    Cluster_t Inflate();
+    bool Commit();
+    bool AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following);
+    bool AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding, Vertex_handle v_following);
+    bool AddFaces(MultiFace_t faces);
+    bool Inflate();
 
   private:
     MultiVertex_t vertexes_;
     MultiEdge_t edges_;
     MultiFace_t faces_;
     int cluster_id = 0;
-    Polygon perimeter_;
+    MultiVertex_t perimeter_;
+    Cluster_circulator perimeter_circulator;
   };
 
-  inline bool Cluster_Container::ShiftStart(Vertex_handle v_start)
+  inline bool Cluster::ShiftStart(Vertex_handle v_start)
   {
     int v_idx_start = LocateVertex(v_start);
     if(v_idx_start == -1)
@@ -72,17 +73,15 @@ namespace CC
     return true;
   }
 
-  inline bool Cluster_Container::Commit(Cluster_t new_cluster) {}
-  inline Cluster_t Cluster_Container::AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding,
-                                                  Vertex_handle v_following)
+  inline bool Cluster::Commit() {}
+  inline bool Cluster::AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding, Vertex_handle v_following) {}
+  inline bool Cluster::AddFaces(MultiFace_t faces) {}
+  inline Cluster::Cluster(Face_handle f)
   {
-  }
-  inline Cluster_t Cluster_Container::AddFaces(MultiFace_t faces) {}
-  inline Cluster_Container::Cluster_Container(Face_handle f)
-  {
-    perimeter_.push_back(f->vertex(0)->point());
-    perimeter_.push_back(f->vertex(1)->point());
-    perimeter_.push_back(f->vertex(2)->point());
+    perimeter_.push_back(f->vertex(0));
+    perimeter_.push_back(f->vertex(1));
+    perimeter_.push_back(f->vertex(2));
+
     assert(perimeter_.is_counterclockwise_oriented);
   }
   // {
@@ -118,7 +117,7 @@ namespace CC
   //   // 2nd vertex is opposite to the 0th edge
   //   assert(vertexes_[2] == f->vertex(edges_[0].second));
   // }
-  inline int Cluster_Container::LocateVertex(Vertex_handle v)
+  inline int Cluster::LocateVertex(Vertex_handle v)
   {
     for(int i = 0; i < vertexes_.size(); i++)
     {
@@ -127,15 +126,15 @@ namespace CC
     }
     return -1;
   }
-  inline Cluster_t Cluster_Container::Inflate() {}
-  inline Cluster_t Cluster_Container::AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following)
+  inline bool Cluster::Inflate() {}
+  inline bool Cluster::AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following)
   {
     int idx_start = LocateVertex(v_preceding);
     int idx_end = LocateVertex(v_following);
 
     if(idx_end == -1 || idx_start == -1)
     {
-      return {{}, {}, {}, false};
+      return false;
     }
 
     if(idx_start > idx_end)

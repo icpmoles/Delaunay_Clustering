@@ -6,7 +6,7 @@
 #define TRIANGULATION_2_EXAMPLES_CLUSTER_H
 
 #include "convexification/Augmented_Mesh.hpp"
-#include "convexification/Cluster_Container.hpp"
+#include "Cluster/Cluster.hpp"
 #include "convexification/utils.hpp"
 
 //
@@ -31,7 +31,7 @@ namespace CM // Cluster
 
   private:
     AUM::Augmented_Mesh mesh_;
-    std::vector<CC::Cluster_Container> clusters_;
+    std::vector<CC::Cluster> clusters_;
   };
 
 

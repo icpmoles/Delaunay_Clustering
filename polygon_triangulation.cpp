@@ -21,7 +21,7 @@
 #include <unordered_map>
 
 
-#include "convexification/Cluster_Manager.hpp"
+#include "Cluster/Cluster_Manager.hpp"
 #include "convexification/preprocessing.hpp"
 #include "convexification/utils.hpp"
 #include "convexification/wkt_import.hpp"

@@ -21,6 +21,10 @@
 #include <CGAL/mark_domain_in_triangulation.h>
 #include <CGAL/min_quadrilateral_2.h>
 
+#include <CGAL/circulator.h>
+#include <algorithm>
+#include <cassert>
+#include <vector>
 
 #include <boost/property_map/property_map.hpp>
 #include <iostream>
@@ -83,6 +87,15 @@ typedef std::vector<Face_handle> MultiFace_t;
 //  * Collection of Clusters
 //  */
 // typedef std::vector<Cluster_t> MultiCluster_t;
+
+// For circulator of (mesh) vertex type
+// Why not using a standard Polygon2 type? Well, the polygon2 only allows iterating across points(x,y)
+// losing the face information
+// typedef MultiVertex_t::iterator MV_I;
+// typedef CGAL::Circulator_from_iterator<MV_I> Cluster_Circulator;
+// typedef CGAL::Container_from_circulator<Cluster_Circulator> Cluster_Container;
+// typedef Cluster_Container::iterator Cluster_Iterator;
+
 
 typedef CGAL::Triangulation_ds_face_circulator_2<Tds> Face_Circulator;
 typedef CGAL::Container_from_circulator<Face_Circulator> Face_Container;
