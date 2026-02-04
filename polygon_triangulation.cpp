@@ -21,7 +21,7 @@
 #include <unordered_map>
 
 
-#include "convexification/clustering.hpp"
+#include "convexification/Cluster_Manager.hpp"
 #include "convexification/preprocessing.hpp"
 #include "convexification/utils.hpp"
 #include "convexification/wkt_import.hpp"
@@ -37,7 +37,7 @@ typedef std::unordered_map<Face_handle, double> AreaFaceMap;
 // typedef PS::Stop_below_count_ratio_threshold                      Stop;
 // typedef PS::Squared_distance_cost                                 Cost;
 
-typedef CLS::Mesh_Augmented CDTwI;
+// typedef CLS::Mesh_Augmented CDTwI;
 
 
 void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
   // test database
 
   // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
-  CDTwI cdt_workplace_wi = CLS::Mesh_Augmented(cdt_workplace);
+  CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace);
   cdt_workplace_wi.iterate();
   std::cout << "database" << std::endl << std::endl;
 

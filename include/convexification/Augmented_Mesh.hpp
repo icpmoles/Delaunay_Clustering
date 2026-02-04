@@ -5,21 +5,13 @@
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 #define TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 
-#include "convexification/Cluster.hpp"
+
 #include "convexification/utils.hpp"
 
 
 #define OBSTACLE_VALUE UINT_MAX
 #define UNEXPLORED_VALUE (UINT_MAX / 2)
 
-
-typedef struct Cluster_t
-{
-  MultiVertex_t vertexes;
-  MultiEdge_t edges;
-  MultiFace_t faces;
-  int cluster_id = 0;
-} Cluster_t;
 
 typedef struct Face_Description
 {
@@ -40,11 +32,11 @@ typedef struct Face_Description
 
 } Face_Description;
 
-namespace CLS
+namespace AUM // Augmented Mesh
 {
 
 
-  class Mesh_Augmented
+  class Augmented_Mesh
   {
   public:
     /**
@@ -53,7 +45,7 @@ namespace CLS
      * The New Object of the class will keep a copy inside.
      * It will automatically calculate the area of the internal triangles.
      */
-    Mesh_Augmented(CDT cdt)
+    Augmented_Mesh(CDT cdt)
     {
       this->cdt_ = std::move(cdt);
       populate_properties_();
@@ -66,10 +58,7 @@ namespace CLS
      */
     [[nodiscard]] Face_Description get_face_description(size_t i) const;
 
-    /**
-     * Where the magic happens.
-     */
-    void iterate();
+    CDT get_cdt() { return this->cdt_; }
 
     /**
      *
@@ -79,31 +68,31 @@ namespace CLS
      */
     bool set_face_description(const Face_Description& description, size_t i);
 
+    /**
+     *
+     * @param description Struct containing the new description of the i-th face
+     * @param f  facehandle of the subject it's replacing
+     * @return true if the face exists, false if there's an error assigning
+     */
+    bool set_face_description(const Face_Description& description, Face_handle f);
+
+
+    Face_Description* get_face_description_(Face_handle f);
+
   private:
-    void add_face_to_cluster_(Face_handle f, size_t i);
-
-    /**
-     *
-     * @param cluster Subject of interest
-     * @param cluster_id Cluster_id of the Subject.
-     * @return Whether all the neighbouring faces are free to expand to
-     */
-    bool is_cluster_inflatable_(const Cluster_t& cluster, size_t cluster_id);
-
-
-    /**
-     *
-     * @param cluster Subject to inflate
-     * @param cluster_id Cluster to assign it to
-     * @return A cluster of the inflated region.
-     */
-    MultiVertex_t inflate_cluster_(MultiVertex_t& cluster, size_t cluster_id);
-    MultiVertex_t insert_cluster_(MultiVertex_t original_cluster, MultiVertex_t insert, Vertex_handle v_preceding,
-                                  Vertex_handle v_following);
-    static MultiVertex_t add_vertex_to_cluster_(MultiVertex_t& cluster, MultiVertex_t v_in, size_t idx_preceding,
-                                                size_t idx_following);
-    MultiVertex_t add_vertex_to_cluster_(MultiVertex_t& cluster, const Vertex_handle& v_in,
-                                         const Vertex_handle& v_preceding, const Vertex_handle& v_following);
+    // /**
+    //  *
+    //  * @param cluster Subject to inflate
+    //  * @param cluster_id Cluster to assign it to
+    //  * @return A cluster of the inflated region.
+    //  */
+    // MultiVertex_t inflate_cluster_(MultiVertex_t& cluster, size_t cluster_id);
+    // MultiVertex_t insert_cluster_(MultiVertex_t original_cluster, MultiVertex_t insert, Vertex_handle v_preceding,
+    //                               Vertex_handle v_following);
+    // static MultiVertex_t add_vertex_to_cluster_(MultiVertex_t& cluster, MultiVertex_t v_in, size_t idx_preceding,
+    //                                             size_t idx_following);
+    // MultiVertex_t add_vertex_to_cluster_(MultiVertex_t& cluster, const Vertex_handle& v_in,
+    //                                      const Vertex_handle& v_preceding, const Vertex_handle& v_following);
 
     // void add_vertex_to_cluster_(Vertex_handle v1, Vertex_handle v2, Vertex_handle new_vertex, size_t i) const;
 
@@ -118,24 +107,8 @@ namespace CLS
 
     size_t get_vector_idx_(Face_handle f);
 
-    Face_Description* get_face_description_(Face_handle f);
+    void print_face_info(Face_handle f, bool print_vertexes);
 
-    /**
-     *
-     * @param cluster Target of query
-     * @param edges_in New Vertexes: in CCW
-     * @param v_preceding
-     * @param v_following
-     * @return If the new Cluster is still Convex
-     */
-    bool is_still_convex_(Cluster_t cluster, MultiEdge_t edges_in, Vertex_handle v_preceding,
-                          Vertex_handle v_following);
-
-    void show_map_(size_t cluster_id);
-
-    Cluster_t facehandle_to_cluster_(Face_handle f, bool CCW = true);
-
-    void print_face_info(Face_handle, bool print_vertexes = false);
 
     /**
      * Resets the Distance value of the unassigned faces.
@@ -145,12 +118,13 @@ namespace CLS
 
     CDT cdt_;
     std::vector<Face_Description> Faces_Properties_;
-    std::vector<Cluster_t> Clusters_;
   };
 
-  inline Face_Description Mesh_Augmented::get_face_description(size_t i) const { return this->Faces_Properties_[i]; }
+  inline Face_Description Augmented_Mesh::get_face_description(size_t i) const { return this->Faces_Properties_[i]; }
 
-  inline void Mesh_Augmented::iterate()
+  /*
+
+  inline void Augmented_Mesh::iterate()
   {
     double total_area = 0.0;
     for(const Face_handle f : this->cdt_.finite_face_handles())
@@ -230,7 +204,6 @@ namespace CLS
       show_map_(i);
     }
 
-    /*
     do
     {
       for(const Vertex_handle v : this->Clusters_[cluster_id])
@@ -249,10 +222,10 @@ namespace CLS
       }
     }
     while(++steps < steps_max);
-    */
-  }
 
-  inline bool Mesh_Augmented::set_face_description(const Face_Description& description, size_t i)
+  }
+  */
+  inline bool Augmented_Mesh::set_face_description(const Face_Description& description, size_t i)
   {
     if(i > Faces_Properties_.size())
       return false;
@@ -260,100 +233,102 @@ namespace CLS
     return true;
   }
 
-  Cluster_t Mesh_Augmented::facehandle_to_cluster_(Face_handle f, bool CCW)
-  {
-    int second_element = 1, third_element = 2;
-    if(!CCW)
-    {
-      second_element = 2;
-      third_element = 1;
-    }
 
-    /* FaceHandle returns the vertexes in CCW order if accessed in sequential form ( 0 -> 1 -> 2 -> 3 -> 4 -> ... )
-     * in (in modulo 3) ( 0 -> 1 -> 2 )
-     * But it returns in CW way if accessed in a reverse way ( 0 -> 2 -> 1 )
-     */
-    MultiVertex_t new_vertexes{f->vertex(0), f->vertex(second_element), f->vertex(third_element)};
-    MultiEdge_t new_edges{Edge(f, 0)};
+  // Cluster_t Augmented_Mesh::facehandle_to_cluster_(Face_handle f, bool CCW)
+  // {
+  //   int second_element = 1, third_element = 2;
+  //   if(!CCW)
+  //   {
+  //     second_element = 2;
+  //     third_element = 1;
+  //   }
+  //
+  //   /* FaceHandle returns the vertexes in CCW order if accessed in sequential form ( 0 -> 1 -> 2 -> 3 -> 4 -> ... )
+  //    * in (in modulo 3) ( 0 -> 1 -> 2 )
+  //    * But it returns in CW way if accessed in a reverse way ( 0 -> 2 -> 1 )
+  //    */
+  //   MultiVertex_t new_vertexes{f->vertex(0), f->vertex(second_element), f->vertex(third_element)};
+  //   MultiEdge_t new_edges{Edge(f, 0)};
+  //
+  //   return (struct Cluster_t){new_vertexes, new_edges};
+  // }
 
-    return (struct Cluster_t){new_vertexes, new_edges};
-  }
+  //
+  // bool Augmented_Mesh::is_cluster_inflatable_(const Cluster_t& cluster, const size_t cluster_id)
+  // {
+  //   for(const Vertex_handle v : cluster)
+  //   {
+  //     std::cout << "vertex of interest: " << v->point() << std::endl;
+  //     Face_Circulator first_f = v->incident_faces();
+  //     Face_Circulator circ = first_f;
+  //     int face_counter = 0;
+  //     do
+  //     {
+  //       // std::cout << face_counter << "th incident vertex:" << circ->vertex(1)->point() << std::endl;
+  //       print_face_info(circ, true);
+  //
+  //       /* Checks if all the faces in the immediate neighborhood are:
+  //        * 1) inside the domain
+  //        * 2) not assigned already
+  //        * 3) if assigned already, they must be to the same candidate cluster
+  //        */
+  //       Face_Description* fd = get_face_description_(circ);
+  //       if(((fd->is_Cluster_Assigned == false) || (fd->is_Cluster_Assigned == true && fd->Cluster_Id == cluster_id))
+  //       &&
+  //          circ->is_in_domain())
+  //       {
+  //         print_face_info(circ);
+  //         std::cout << "Face is a good candidate" << std::endl;
+  //       }
+  //       else
+  //       {
+  //         print_face_info(circ);
+  //         std::cout << "Face is NOT a good candidate" << std::endl;
+  //         return false;
+  //       }
+  //       // std::cout << std::endl << std::endl;
+  //       // face_counter++;
+  //     }
+  //     while(++circ != first_f);
+  //     std::cout << std::endl << std::endl;
+  //   }
+  //   return true;
+  // }
+  // inline MultiVertex_t Augmented_Mesh::add_vertex_to_cluster_(MultiVertex_t& cluster, MultiVertex_t v_in,
+  //                                                             size_t idx_preceding, size_t idx_following)
+  // {
+  //   MultiVertex_t new_cluster(cluster);
+  //   if(idx_following < idx_preceding) //
+  //   {
+  //   }
+  //   else
+  //   {
+  //   }
+  //   return new_cluster;
+  // }
 
-
-  bool Mesh_Augmented::is_cluster_inflatable_(const Cluster_t& cluster, const size_t cluster_id)
-  {
-    for(const Vertex_handle v : cluster)
-    {
-      std::cout << "vertex of interest: " << v->point() << std::endl;
-      Face_Circulator first_f = v->incident_faces();
-      Face_Circulator circ = first_f;
-      int face_counter = 0;
-      do
-      {
-        // std::cout << face_counter << "th incident vertex:" << circ->vertex(1)->point() << std::endl;
-        print_face_info(circ, true);
-
-        /* Checks if all the faces in the immediate neighborhood are:
-         * 1) inside the domain
-         * 2) not assigned already
-         * 3) if assigned already, they must be to the same candidate cluster
-         */
-        Face_Description* fd = get_face_description_(circ);
-        if(((fd->is_Cluster_Assigned == false) || (fd->is_Cluster_Assigned == true && fd->Cluster_Id == cluster_id)) &&
-           circ->is_in_domain())
-        {
-          print_face_info(circ);
-          std::cout << "Face is a good candidate" << std::endl;
-        }
-        else
-        {
-          print_face_info(circ);
-          std::cout << "Face is NOT a good candidate" << std::endl;
-          return false;
-        }
-        // std::cout << std::endl << std::endl;
-        // face_counter++;
-      }
-      while(++circ != first_f);
-      std::cout << std::endl << std::endl;
-    }
-    return true;
-  }
-  inline MultiVertex_t Mesh_Augmented::add_vertex_to_cluster_(MultiVertex_t& cluster, MultiVertex_t v_in,
-                                                              size_t idx_preceding, size_t idx_following)
-  {
-    MultiVertex_t new_cluster(cluster);
-    if(idx_following < idx_preceding) //
-    {
-    }
-    else
-    {
-    }
-    return new_cluster;
-  }
-
-  inline MultiVertex_t Mesh_Augmented::add_vertex_to_cluster_(MultiVertex_t& cluster, const Vertex_handle& v_in,
-                                                              const Vertex_handle& v_preceding,
-                                                              const Vertex_handle& v_following)
-  {
-    size_t preceding_idx = -1;
-    size_t following_idx = -1;
-    size_t counter = 0;
-    for(Vertex_handle it : cluster)
-    {
-      if(v_preceding == it)
-      {
-        preceding_idx = counter;
-      }
-      if(v_following == it)
-      {
-        following_idx = counter;
-      }
-
-      counter++;
-    }
-    return add_vertex_to_cluster_(cluster, MultiVertex_t{v_in}, preceding_idx, following_idx);
-  };
+  // inline MultiVertex_t Augmented_Mesh::add_vertex_to_cluster_(MultiVertex_t& cluster, const Vertex_handle& v_in,
+  //                                                             const Vertex_handle& v_preceding,
+  //                                                             const Vertex_handle& v_following)
+  // {
+  //   size_t preceding_idx = -1;
+  //   size_t following_idx = -1;
+  //   size_t counter = 0;
+  //   for(Vertex_handle it : cluster)
+  //   {
+  //     if(v_preceding == it)
+  //     {
+  //       preceding_idx = counter;
+  //     }
+  //     if(v_following == it)
+  //     {
+  //       following_idx = counter;
+  //     }
+  //
+  //     counter++;
+  //   }
+  //   return add_vertex_to_cluster_(cluster, MultiVertex_t{v_in}, preceding_idx, following_idx);
+  // };
 
   // inline void Mesh_Augmented::add_vertex_to_cluster_(const Vertex_handle v1, const Vertex_handle v2,
   //                                                    const Vertex_handle new_vertex, const size_t i) const
@@ -386,7 +361,7 @@ namespace CLS
   // }
 
 
-  inline void Mesh_Augmented::populate_properties_()
+  inline void Augmented_Mesh::populate_properties_()
   {
     const size_t n_faces = cdt_.number_of_faces();
     Faces_Properties_.clear();
@@ -406,7 +381,7 @@ namespace CLS
     }
   }
 
-  inline bool Mesh_Augmented::get_inlier_face_(Face_handle& destination) const
+  inline bool Augmented_Mesh::get_inlier_face_(Face_handle& destination) const
   {
     Face_handle tentative = this->cdt_.finite_faces_begin();
     const Face_handle last = this->cdt_.finite_faces_end();
@@ -423,44 +398,44 @@ namespace CLS
     return false;
   }
 
-  inline size_t Mesh_Augmented::get_vector_idx_(const Face_handle f) { return get_face_description_(f)->Face_Id; }
+  inline size_t Augmented_Mesh::get_vector_idx_(const Face_handle f) { return get_face_description_(f)->Face_Id; }
 
-  inline Face_Description* Mesh_Augmented::get_face_description_(const Face_handle f)
+  inline Face_Description* Augmented_Mesh::get_face_description_(const Face_handle f)
   {
     const size_t i = f->time_stamp();
     return &Faces_Properties_[i];
   }
 
 
-  bool Mesh_Augmented::is_still_convex_(Cluster_t cluster, MultiEdge_t edges_in, Vertex_handle v_preceding,
-                                        Vertex_handle v_following) {
+  // bool Augmented_Mesh::is_still_convex_(Cluster_t cluster, MultiEdge_t edges_in, Vertex_handle v_preceding,
+  //                                       Vertex_handle v_following) {
+  //
+  //
+  // };
 
 
-  };
+  // inline void Augmented_Mesh::show_map_(size_t cluster_id)
+  // {
+  //   typedef std::unordered_map<Face_handle, bool> FaceOwnershipMap;
+  //   FaceOwnershipMap in_free_space_map;
+  //
+  //   for(const Face_handle f : cdt_.all_face_handles())
+  //   {
+  //     if(f->is_in_domain() && get_face_description_(f)->Cluster_Id == cluster_id)
+  //     {
+  //       in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
+  //     }
+  //     else
+  //     {
+  //       in_free_space_map.insert(std::pair<Face_handle, bool>(f, false));
+  //     }
+  //   }
+  //   const boost::associative_property_map<FaceOwnershipMap> in_free_space(in_free_space_map);
+  //
+  //   CGAL::draw(cdt_, in_free_space);
+  // }
 
-
-  inline void Mesh_Augmented::show_map_(size_t cluster_id)
-  {
-    typedef std::unordered_map<Face_handle, bool> FaceOwnershipMap;
-    FaceOwnershipMap in_free_space_map;
-
-    for(const Face_handle f : cdt_.all_face_handles())
-    {
-      if(f->is_in_domain() && get_face_description_(f)->Cluster_Id == cluster_id)
-      {
-        in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
-      }
-      else
-      {
-        in_free_space_map.insert(std::pair<Face_handle, bool>(f, false));
-      }
-    }
-    const boost::associative_property_map<FaceOwnershipMap> in_free_space(in_free_space_map);
-
-    CGAL::draw(cdt_, in_free_space);
-  }
-
-  inline void Mesh_Augmented::print_face_info(const Face_handle f, bool print_vertexes)
+  inline void Augmented_Mesh::print_face_info(const Face_handle f, bool print_vertexes)
   {
     Face_Description* fd = get_face_description_(f);
     std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" << std::endl;
@@ -471,7 +446,7 @@ namespace CLS
       UTILS::print_triangle_vertices(f);
   }
 
-  size_t Mesh_Augmented::reset_unassigned_faces()
+  inline size_t Augmented_Mesh::reset_unassigned_faces()
   {
     size_t i = 0;
     for(const Face_handle f : this->cdt_.finite_face_handles())
@@ -486,6 +461,6 @@ namespace CLS
     return i;
   }
 
-} // namespace CLS
+} // namespace AUM
 
 #endif // TRIANGULATION_2_EXAMPLES_CLUSTERING_H
