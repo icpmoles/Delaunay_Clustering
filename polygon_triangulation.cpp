@@ -22,9 +22,9 @@
 
 
 #include "Cluster/Cluster_Manager.hpp"
-#include "convexification/preprocessing.hpp"
-#include "convexification/utils.hpp"
-#include "convexification/wkt_import.hpp"
+#include "Convexification/preprocessing.hpp"
+#include "Convexification/utils.hpp"
+#include "Convexification/wkt_import.hpp"
 
 
 // namespace PS = CGAL::Polyline_simplification_2;

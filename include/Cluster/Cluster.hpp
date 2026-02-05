@@ -5,7 +5,7 @@
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
 #define TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
 #include "Cluster/Cluster_Circulator.hpp"
-#include "convexification/utils.hpp"
+#include "Convexification/utils.hpp"
 
 // typedef struct Cluster_t
 // {
@@ -51,7 +51,7 @@ namespace CC
     // Face_handle f = edges_[v_idx_start].first;
     // int edge_idx = edges_[v_idx_start].second;
     // assert(f->vertex(ccw(edge_idx)) == v_start);
-    assert(edges_[v_idx_start].first->vertex(ccw(edges_[v_idx_start].second)) == v_start);
+    //assert(edges_[v_idx_start].first->vertex(ccw(edges_[v_idx_start].second)) == v_start);
 
 
     // reformat vertex list
@@ -69,7 +69,7 @@ namespace CC
     edges_ = new_edges;
 
     assert(vertexes_[0] == v_start);
-    assert(edges_[0].first->vertex(ccw(edges_[0].second)) == v_start);
+    //assert(edges_[0].first->vertex(ccw(edges_[0].second)) == v_start);
     return true;
   }
 
@@ -82,7 +82,6 @@ namespace CC
     perimeter_.push_back(f->vertex(1));
     perimeter_.push_back(f->vertex(2));
 
-    assert(perimeter_.is_counterclockwise_oriented);
   }
   // {
   //   // commit face

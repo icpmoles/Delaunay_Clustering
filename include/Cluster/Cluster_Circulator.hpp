@@ -5,7 +5,7 @@
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTER_CIRCULATOR_HPP
 #define TRIANGULATION_2_EXAMPLES_CLUSTER_CIRCULATOR_HPP
 
-#include "convexification/utils.hpp"
+#include "Convexification/utils.hpp"
 
 namespace CC
 {

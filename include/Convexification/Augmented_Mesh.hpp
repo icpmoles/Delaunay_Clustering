@@ -6,7 +6,7 @@
 #define TRIANGULATION_2_EXAMPLES_CLUSTERING_H
 
 
-#include "convexification/utils.hpp"
+#include "Convexification/utils.hpp"
 
 
 #define OBSTACLE_VALUE UINT_MAX

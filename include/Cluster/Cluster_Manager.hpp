@@ -5,9 +5,9 @@
 #ifndef TRIANGULATION_2_EXAMPLES_CLUSTER_H
 #define TRIANGULATION_2_EXAMPLES_CLUSTER_H
 
-#include "convexification/Augmented_Mesh.hpp"
 #include "Cluster/Cluster.hpp"
-#include "convexification/utils.hpp"
+#include "Convexification/Augmented_Mesh.hpp"
+#include "Convexification/utils.hpp"
 
 //
 // typedef struct Cluster_t

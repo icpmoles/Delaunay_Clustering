@@ -6,7 +6,7 @@
 #define TRIANGULATION_2_EXAMPLES_PREPROCESSING_H
 
 
-#include "convexification/utils.hpp"
+#include "Convexification/utils.hpp"
 
 
 namespace PP
