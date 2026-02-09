@@ -120,7 +120,7 @@ typedef struct Face_Description
   // Check if assigned
   bool is_Area_Calculated = false; // whether the area is calculated
   bool is_Cluster_Assigned = false; // whether it's assigned to a cluster
-  bool is_Face_Assigned = false; // whether the area is calculated
+  bool is_Face_Assigned = false; // whether the Face_Id is assigned
 
   // walk metadata
 
@@ -145,6 +145,51 @@ namespace UTILS
     std::cout << "1st Vertex " << f->vertex(0)->point() << std::endl;
     std::cout << "2nd Vertex " << f->vertex(1)->point() << std::endl;
     std::cout << "3rd Vertex " << f->vertex(2)->point() << std::endl;
+  }
+
+  inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
+  {
+    if(f->vertex(0) == v1 || f->vertex(1) == v1 || f->vertex(2) == v1)
+      return true;
+    else
+      return false;
+  }
+
+  /**
+   *
+   * @param f Face of interesr
+   * @param v1 Vertex
+   * @param v2 Vertex
+   * @return True if v2 is in CCW order compared to v1
+   */
+  inline bool belong_to_face(Face_handle f, Vertex_handle v1, Vertex_handle v2)
+  {
+    if(f->vertex(0) == v1 && f->vertex(1) == v2)
+      return true;
+    if(f->vertex(1) == v1 && f->vertex(2) == v2)
+      return true;
+    if(f->vertex(2) == v1 && f->vertex(0) == v2)
+      return true;
+    return false;
+  }
+
+  /**
+   *
+   * @param f Face of interesr
+   * @param v1 Vertex
+   * @param v2 Vertex
+   * @param v3 Vertex
+   * @return True if v1 v2 and v3 are in CCW order
+   */
+  inline bool belong_to_face(Face_handle f, Vertex_handle v1, Vertex_handle v2, Vertex_handle v3)
+  {
+    if(f->vertex(0) == v1 && f->vertex(1) == v2 && f->vertex(2) == v3)
+      return true;
+    if(f->vertex(1) == v1 && f->vertex(2) == v2 && f->vertex(0) == v3)
+      return true;
+    if(f->vertex(2) == v1 && f->vertex(0) == v2 && f->vertex(1) == v3)
+      return true;
+    return false;
   }
 
 } // namespace UTILS

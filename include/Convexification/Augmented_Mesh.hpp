@@ -9,8 +9,6 @@
 #include "Convexification/utils.hpp"
 
 
-
-
 namespace AUM // Augmented Mesh
 {
 
@@ -56,7 +54,7 @@ namespace AUM // Augmented Mesh
     void set_face_description(const Face_Description& description, Face_handle f);
 
 
-    Face_Description* get_face_description_(Face_handle f);
+    Face_Description* get_face_description(Face_handle f);
 
   private:
     // /**
@@ -208,13 +206,12 @@ namespace AUM // Augmented Mesh
   {
     if(i > Faces_Properties_.size())
       // return false;
-    Faces_Properties_.at(i) = description;
+      Faces_Properties_.at(i) = description;
     // return true;
   }
   inline void Augmented_Mesh::set_face_description(const Face_Description& description, Face_handle f)
   {
     set_face_description(description, get_vector_idx_(f));
-
   }
 
 
@@ -382,9 +379,9 @@ namespace AUM // Augmented Mesh
     return false;
   }
 
-  inline size_t Augmented_Mesh::get_vector_idx_(const Face_handle f) { return get_face_description_(f)->Face_Id; }
+  inline size_t Augmented_Mesh::get_vector_idx_(const Face_handle f) { return get_face_description(f)->Face_Id; }
 
-  inline Face_Description* Augmented_Mesh::get_face_description_(const Face_handle f)
+  inline Face_Description* Augmented_Mesh::get_face_description(const Face_handle f)
   {
     const size_t i = f->time_stamp();
     return &Faces_Properties_[i];
@@ -421,7 +418,7 @@ namespace AUM // Augmented Mesh
 
   inline void Augmented_Mesh::print_face_info(const Face_handle f, bool print_vertexes)
   {
-    Face_Description* fd = get_face_description_(f);
+    Face_Description* fd = get_face_description(f);
     std::cout << "Face_Id: " << fd->Face_Id << " (" << fd->is_Face_Assigned << ")" << std::endl;
     std::cout << "Cluster_Id: " << fd->Cluster_Id << " (" << fd->is_Cluster_Assigned << ")" << std::endl;
     std::cout << "Area: " << fd->Area << " (" << fd->is_Area_Calculated << ")" << std::endl;
@@ -435,10 +432,10 @@ namespace AUM // Augmented Mesh
     size_t i = 0;
     for(const Face_handle f : this->cdt_.finite_face_handles())
     {
-      if(get_face_description_(f)->is_Cluster_Assigned == false)
+      if(get_face_description(f)->is_Cluster_Assigned == false)
       {
         i++;
-        get_face_description_(f)->Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE;
+        get_face_description(f)->Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE;
       }
     }
 

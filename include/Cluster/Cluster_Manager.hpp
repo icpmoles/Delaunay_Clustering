@@ -44,7 +44,7 @@ namespace CM // Cluster Manager
 
     for(const Face_handle f : mesh_.get_cdt().all_face_handles())
     {
-      if(f->is_in_domain() && mesh_.get_face_description_(f)->Cluster_Id == cluster_id)
+      if(f->is_in_domain() && mesh_.get_face_description(f)->Cluster_Id == cluster_id)
       {
         in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
       }
