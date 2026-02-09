@@ -1,145 +1,182 @@
 //
-// Created by icpmoles on 04/02/26.
+// Created by icpmoles on 05/02/26.
 //
 
-#ifndef TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
-#define TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
-#include "Cluster/Cluster_Circulator.hpp"
+#ifndef DELAUNAY_CLUSTERING_CLUSTER_HPP
+#define DELAUNAY_CLUSTERING_CLUSTER_HPP
 #include "Convexification/utils.hpp"
-
-// typedef struct Cluster_t
-// {
-//   MultiVertex_t vertexes;
-//   MultiEdge_t edges;
-//   MultiFace_t faces;
-//   bool success;
-// } Cluster_t;
-
+#include "Cluster/Cluster_Circulator.hpp"
+#include "Convexification/Augmented_Mesh.hpp"
 
 namespace CC
 {
   class Cluster
   {
-  public:
-    Cluster(Face_handle f);
-    int LocateVertex(Vertex_handle v);
-    bool ShiftStart(Vertex_handle v_start);
-    bool Commit();
-    bool AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following);
-    bool AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding, Vertex_handle v_following);
-    bool AddFaces(MultiFace_t faces);
-    bool Inflate();
+    public:
+    // Type Definitions
+    typedef MultiVertex_t Container;
+    typedef typename MultiVertex_t::difference_type difference_type;
+    typedef typename MultiVertex_t::value_type value_type;
+    typedef typename MultiVertex_t::pointer pointer;
+    typedef typename MultiVertex_t::reference reference;
+    typedef typename MultiVertex_t::const_reference const_reference;
+    typedef typename MultiVertex_t::iterator       Vertex_const_iterator;
+    typedef Cluster_circulator   Vertex_const_circulator;
+    typedef typename MultiVertex_t::iterator       Vertex_iterator;
+    typedef MultiVertex_t Vertices;
+    typedef Vertex_const_circulator Vertex_circulator;
+
+    /// Constructors
+    Cluster(Face_handle f , AUM::Augmented_Mesh* mesh);
+    // Copy constructor.
+    Cluster(const Cluster& cluster) = default;
+    // Move constructor
+    Cluster(Cluster&& cluster) = default;
+
+    /// Creates a cluster with vertices from the sequence
+    /// defined by the range \c [first,last).
+    /// The value type of \c InputIterator must be \c Vertex_handle.
+    template <class InputIterator>
+    Cluster(InputIterator first, InputIterator last, AUM::Augmented_Mesh* mesh)
+  : vertex_container(first,last), pMesh_(mesh)
+    {}
+
+    /// Modifiers
+    // void set(Vertex_iterator i, const Face_Description& fd)
+    // {
+    //   // *i = q;
+    //   //TODO: propagate to Augmented Mesh
+    //   //pMesh_->set_face_description(fd,*i);
+    // }
+
+    void set(Vertex_iterator i, const Vertex_handle& q)
+    { *i = q; }
+
+
+    /// Inserts the vertex `q` before `i`. The return value points to
+    /// the inserted vertex.
+    Vertex_iterator insert(Vertex_iterator i, const Vertex_handle& q)
+      {
+        return vertex_container.insert(i,q);
+      //TODO: propagate to Augmented Mesh
+      }
+
+    /// Inserts the vertex `q` before `i`. The return value points to
+    /// the inserted vertex.
+    Vertex_iterator insert(Vertex_circulator i, const Vertex_handle& q)
+      {
+        return vertex_container.insert(i.mod_iterator(),q);
+      //TODO: propagate to Augmented Mesh
+
+      }
+
+    /// Inserts the vertices in the range `[first, last)`
+    /// before `i`.  The value type of points in the range
+    /// `[first,last)` must be `Point_2`.
+    template <class InputIterator>
+    void insert(Vertex_iterator i,
+                InputIterator first,
+                InputIterator last)
+    {
+      vertex_container.insert(i, first, last);
+      //TODO: propagate to Augmented Mesh
+    }
+
+    /// Inserts the vertices in the range `[first, last)`
+    /// before `i`.  The value type of points in the range
+    /// `[first,last)` must be `Point_2`.
+    template <class InputIterator>
+    void insert(Vertex_circulator i,
+                InputIterator first,
+                InputIterator last)
+      { vertex_container.insert(i.mod_iterator(), first, last); }
+
+    /// Has the same semantics as `p.insert(p.vertices_end(), q)`.
+    void push_back(const Vertex_handle& x)
+      { vertex_container.insert(vertex_container.end(), x); }
+
+    /// Erases the vertex pointed to by `i`.
+    Vertex_iterator erase(Vertex_iterator i)
+      {
+        return vertex_container.erase(i);
+      }
+
+    /// Erases the vertex pointed to by `i`.
+    Vertex_circulator erase(Vertex_circulator i)
+      {
+        auto it = vertex_container.erase(i.mod_iterator());
+        if(it == vertex_container.end()){
+          it = vertex_container.begin();
+        }
+        return Vertex_circulator(&vertex_container, it);
+      }
+
+    /// Erases the vertices in the range `[first, last)`.
+    Vertex_iterator erase(Vertex_iterator first, Vertex_iterator last)
+      {
+        return vertex_container.erase(first, last);
+      }
+
+    /// Erases the vertices in the range `[first, last)`.
+    void clear()
+    {
+      vertex_container.clear();
+    }
+
+    /// Reverses the orientation of the polygon. The vertex pointed to
+    ///  by `p.vertices_begin()` remains the same.
+    void reverse_orientation()
+    {
+      if (vertex_container.size() <= 1)
+        return;
+      typename MultiVertex_t::iterator i = vertex_container.begin();
+      std::reverse(++i, vertex_container.end());
+    }
+
+    /// @}
+
+    /// \name Access Functions
+    /// The following methods of the class Polygon_2
+    /// return circulators and iterators that allow to traverse the
+    /// vertices and edges.
+    /// @{
+
+    /// Returns a constant iterator that allows to traverse the
+    /// vertices of the polygon.
+    Vertex_iterator vertices_begin() const
+      { return const_cast<Cluster&>(*this).vertex_container.begin(); }
+
+    /// Returns the corresponding past-the-end iterator.
+    Vertex_iterator vertices_end() const
+      { return const_cast<Cluster&>(*this).vertex_container.end(); }
+
+    /// returns the range of vertices.
+    const Vertices& vertices() const
+    {
+      return vertex_container;
+    }
+
+//    Vertex_const_circulator vertices_circulator() const
+//      { return Vertex_const_circulator(&vertex_container, vertex_container.begin()); }
+
+    /// Returns a constant circulator that allows to traverse the
+    /// vertices of the polygon.
+    Vertex_circulator vertices_circulator() const
+      {
+        Cluster& self = const_cast<Cluster&>(*this);
+        return Vertex_circulator(&self.vertex_container,
+               self.vertex_container.begin());
+      }
+
 
   private:
-    MultiVertex_t vertexes_;
-    MultiEdge_t edges_;
-    MultiFace_t faces_;
-    int cluster_id = 0;
-    MultiVertex_t perimeter_;
-    Cluster_circulator perimeter_circulator;
+    MultiVertex_t vertex_container;
+    AUM::Augmented_Mesh* pMesh_;
   };
 
-  inline bool Cluster::ShiftStart(Vertex_handle v_start)
-  {
-    int v_idx_start = LocateVertex(v_start);
-    if(v_idx_start == -1)
-    {
-      // vertex not found
-      return false;
-    }
-    // The first vertex of the i-th edge should be the same as the one found by linear search.
-    // Face_handle f = edges_[v_idx_start].first;
-    // int edge_idx = edges_[v_idx_start].second;
-    // assert(f->vertex(ccw(edge_idx)) == v_start);
-    //assert(edges_[v_idx_start].first->vertex(ccw(edges_[v_idx_start].second)) == v_start);
 
 
-    // reformat vertex list
-    MultiVertex_t new_vertexes;
-    auto pos_vertex = std::next(vertexes_.begin(), v_idx_start);
-    new_vertexes.insert(new_vertexes.begin(), pos_vertex, vertexes_.end());
-    new_vertexes.insert(new_vertexes.end(), vertexes_.begin(), std::prev(pos_vertex));
-    vertexes_ = new_vertexes;
 
-    // reformat edges list
-    MultiEdge_t new_edges;
-    auto pos_edge = std::next(edges_.begin(), v_idx_start);
-    new_edges.insert(new_edges.begin(), pos_edge, edges_.end());
-    new_edges.insert(new_edges.end(), edges_.begin(), std::prev(pos_edge));
-    edges_ = new_edges;
+}
 
-    assert(vertexes_[0] == v_start);
-    //assert(edges_[0].first->vertex(ccw(edges_[0].second)) == v_start);
-    return true;
-  }
-
-  inline bool Cluster::Commit() {}
-  inline bool Cluster::AddVertexes(MultiVertex_t vertexes, Vertex_handle v_preceding, Vertex_handle v_following) {}
-  inline bool Cluster::AddFaces(MultiFace_t faces) {}
-  inline Cluster::Cluster(Face_handle f)
-  {
-    perimeter_.push_back(f->vertex(0));
-    perimeter_.push_back(f->vertex(1));
-    perimeter_.push_back(f->vertex(2));
-
-  }
-  // {
-  //   // commit face
-  //   faces_.push_back(f);
-  //
-  //
-  //   // commit vertexes
-  //   vertexes_.push_back(f->vertex(0));
-  //   vertexes_.push_back(f->vertex(1));
-  //   vertexes_.push_back(f->vertex(2));
-  //   // commit edges:
-  //   edges_.push_back(Edge(f, 2));
-  //   edges_.push_back(Edge(f, 0));
-  //   edges_.push_back(Edge(f, 1));
-  //
-  //   //
-  //   //        V0
-  //   //       /  \
-  //   //      /    \
-  //   //  E0 /      \ E2
-  //   //    /        \
-  //   //   /          \
-  //   // V1────────────V2
-  //   //        E1
-  //   // i-th edge connects the i.th vertex to the (i+1).th vertex
-  //   //
-  //
-  //   // 0-th vertex is opposite to the 1st edge
-  //   assert(vertexes_[0] == f->vertex(edges_[1].second));
-  //   // 1st vertex is opposite to the 2nd edge
-  //   assert(vertexes_[1] == f->vertex(edges_[2].second));
-  //   // 2nd vertex is opposite to the 0th edge
-  //   assert(vertexes_[2] == f->vertex(edges_[0].second));
-  // }
-  inline int Cluster::LocateVertex(Vertex_handle v)
-  {
-    for(int i = 0; i < vertexes_.size(); i++)
-    {
-      if(vertexes_[i] == v)
-        return i;
-    }
-    return -1;
-  }
-  inline bool Cluster::Inflate() {}
-  inline bool Cluster::AddEdges(MultiEdge_t edges, Vertex_handle v_preceding, Vertex_handle v_following)
-  {
-    int idx_start = LocateVertex(v_preceding);
-    int idx_end = LocateVertex(v_following);
-
-    if(idx_end == -1 || idx_start == -1)
-    {
-      return false;
-    }
-
-    if(idx_start > idx_end)
-    {
-      ShiftStart(v_preceding);
-    }
-  }
-} // namespace CC
-#endif // TRIANGULATION_2_EXAMPLES_CLUSTER_CONTAINER_HPP
+#endif // DELAUNAY_CLUSTERING_CLUSTER_HPP

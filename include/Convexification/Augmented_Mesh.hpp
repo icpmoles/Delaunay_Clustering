@@ -9,28 +9,7 @@
 #include "Convexification/utils.hpp"
 
 
-#define OBSTACLE_VALUE UINT_MAX
-#define UNEXPLORED_VALUE (UINT_MAX / 2)
 
-
-typedef struct Face_Description
-{
-  // payload
-  size_t Cluster_Id = -1; // id of the cluster
-
-  size_t Face_Id = -1; // id of the face in the vector
-  double Area = -1.0; // area of the face
-
-  // Check if assigned
-  bool is_Area_Calculated = false; // whether the area is calculated
-  bool is_Cluster_Assigned = false; // whether it's assigned to a cluster
-  bool is_Face_Assigned = false; // whether the area is calculated
-
-  // walk metadata
-
-  unsigned Distance = UNEXPLORED_VALUE; // how many greedy steps without convexity
-
-} Face_Description;
 
 namespace AUM // Augmented Mesh
 {
@@ -66,7 +45,7 @@ namespace AUM // Augmented Mesh
      * @param i face_id that it's replacing
      * @return true if the face exists, false if there's an error assigning
      */
-    bool set_face_description(const Face_Description& description, size_t i);
+    void set_face_description(const Face_Description& description, size_t i);
 
     /**
      *
@@ -74,7 +53,7 @@ namespace AUM // Augmented Mesh
      * @param f  facehandle of the subject it's replacing
      * @return true if the face exists, false if there's an error assigning
      */
-    bool set_face_description(const Face_Description& description, Face_handle f);
+    void set_face_description(const Face_Description& description, Face_handle f);
 
 
     Face_Description* get_face_description_(Face_handle f);
@@ -225,12 +204,17 @@ namespace AUM // Augmented Mesh
 
   }
   */
-  inline bool Augmented_Mesh::set_face_description(const Face_Description& description, size_t i)
+  inline void Augmented_Mesh::set_face_description(const Face_Description& description, size_t i)
   {
     if(i > Faces_Properties_.size())
-      return false;
+      // return false;
     Faces_Properties_.at(i) = description;
-    return true;
+    // return true;
+  }
+  inline void Augmented_Mesh::set_face_description(const Face_Description& description, Face_handle f)
+  {
+    set_face_description(description, get_vector_idx_(f));
+
   }
 
 

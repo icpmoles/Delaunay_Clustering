@@ -34,6 +34,8 @@
 #include <fstream>
 #include <iostream>
 
+#define OBSTACLE_VALUE UINT_MAX
+#define UNEXPLORED_VALUE (UINT_MAX / 2)
 
 namespace PS = CGAL::Polyline_simplification_2;
 
@@ -106,6 +108,25 @@ typedef CGAL::Container_from_circulator<Edge_Circulator> Edge_Container;
 typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> Vertex_Circulator;
 typedef CGAL::Container_from_circulator<Vertex_Circulator> Vertex_Container;
 typedef Vertex_Container::iterator Vertex_Iterator;
+
+typedef struct Face_Description
+{
+  // payload
+  size_t Cluster_Id = -1; // id of the cluster
+
+  size_t Face_Id = -1; // id of the face in the vector
+  double Area = -1.0; // area of the face
+
+  // Check if assigned
+  bool is_Area_Calculated = false; // whether the area is calculated
+  bool is_Cluster_Assigned = false; // whether it's assigned to a cluster
+  bool is_Face_Assigned = false; // whether the area is calculated
+
+  // walk metadata
+
+  unsigned Distance = UNEXPLORED_VALUE; // how many greedy steps without convexity
+
+} Face_Description;
 
 namespace UTILS
 {

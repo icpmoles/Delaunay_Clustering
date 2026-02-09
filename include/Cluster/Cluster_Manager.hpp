@@ -18,7 +18,7 @@
 //   int cluster_id = 0;
 // } Cluster_t;
 
-namespace CM // Cluster
+namespace CM // Cluster Manager
 {
   class Cluster_Manager
   {
@@ -27,7 +27,7 @@ namespace CM // Cluster
     void show_map_(size_t cluster_id);
     void iterate();
 
-    ~Cluster_Manager();
+    ~Cluster_Manager() = default;
 
   private:
     AUM::Augmented_Mesh mesh_;
