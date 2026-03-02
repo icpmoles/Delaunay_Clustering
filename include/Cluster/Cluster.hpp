@@ -1,12 +1,12 @@
 //
 // Created by icpmoles on 05/02/26.
 //
-#include <iterator>
 #ifndef DELAUNAY_CLUSTERING_CLUSTER_HPP
 #define DELAUNAY_CLUSTERING_CLUSTER_HPP
 #include "Cluster/Cluster_Circulator.hpp"
 #include "Convexification/Augmented_Mesh.hpp"
 #include "Convexification/utils.hpp"
+#include <iterator>
 
 namespace CC
 {
@@ -34,6 +34,7 @@ namespace CC
       vertex_container.push_back(f->vertex(2));
       pMesh_ = mesh;
       cluster_id_ = cluster_id;
+      own_face(f);
     }
     // Copy constructor.
     Cluster(const Cluster& cluster) = default;
@@ -57,62 +58,110 @@ namespace CC
     //   //pMesh_->set_face_description(fd,*i);
     // }
 
+    /**
+     *
+     * @param i target
+     * @param q payload
+     * @note Not sure if necessary tbh
+     * @warning doesn't check for feasibility
+     */
     void set(Vertex_iterator i, const Vertex_handle& q) { *i = q; }
 
 
+    /**
+     *
+     * @param v1
+     * @param v2
+     * @return True if v1 and v2 belong to a common face in a CCW order
+     */
+    bool is_insertable(const Vertex_handle v1, const Vertex_handle& v2) const
+    {
+      Face_handle f;
+      return UTILS::share_common_face(v1, v2, f);
+    }
+    /**
+     *
+     * @param i
+     * @param q
+     * @return True if i and q belong to a common face in a CCW order
+     */
+    bool is_insertable(const Vertex_iterator i, const Vertex_handle& q) const { return this->is_insertable(*i, q); }
+    /**
+     *
+     * @param i
+     * @param q
+     * @return True if i and q belong to a common face in a CCW order
+     */
+    bool is_insertable(const Vertex_circulator i, const Vertex_handle& q) const
+    {
+      return is_insertable(i.mod_iterator(), q);
+    }
+
     /// Inserts the vertex `q` before `i`. The return value points to
     /// the inserted vertex. If the vertex q and the iterator don't share a common face then
-    /// it returns the iterator itself as an error.
+    /// it returns the iterator itself to indicate an error. N.b. check with is_insertable() before executing
     Vertex_iterator insert(Vertex_iterator i, const Vertex_handle& q)
     {
-      Face_Circulator first_face = (*i)->incident_faces();
-      Face_Circulator circ = first_face;
-      Face_handle common_face;
-      bool belongs = false;
-      do
-      {
-        if(UTILS::belong_to_face(circ, std::prev(*i), q, (*i)))
-        {
-          belongs = true;
-          common_face = circ;
-        }
-      }
-      while(++circ != first_face);
-
-      if(belongs)
-      {
-        own_face(common_face);
-        return vertex_container.insert(i, q);
-      }
-      return i;
+      // if(Face_handle result; UTILS::share_common_face(*i, q, result))
+      // {
+      //   // Set Properties of common face
+      //   own_face(result);
+      //   // returns modified vertex list
+      return vertex_container.insert(i, q);
+      // }
+      // // returns original iterator to signal error
+      // return i;
     }
 
     /// Inserts the vertex `q` before `i`. The return value points to
     /// the inserted vertex.
-    Vertex_iterator insert(Vertex_circulator i, const Vertex_handle& q)
-    {
-      return this->insert(i.mod_iterator(), q);
-    }
+    Vertex_iterator insert(Vertex_circulator i, const Vertex_handle& q) { return this->insert(i.mod_iterator(), q); }
 
-    /// Inserts the vertices in the range `[first, last)`
-    /// before `i`.  The value type of points in the range
-    /// `[first,last)` must be `Point_2`.
-    template <class InputIterator>
-    void insert(Vertex_iterator i, InputIterator first, InputIterator last)
-    {
-      vertex_container.insert(i, first, last);
-      // TODO: propagate to Augmented Mesh
-      // TODO: check if legal
-    }
 
-    /// Inserts the vertices in the range `[first, last)`
-    /// before `i`.  The value type of points in the range
-    /// `[first,last)` must be `Point_2`.
-    template <class InputIterator>
-    void insert(Vertex_circulator i, InputIterator first, InputIterator last)
-    {
-      this->insert(i.mod_iterator(), first, last);
-    }
+    // /**
+    //  *
+    //  * @tparam InputIterator
+    //  * @param i
+    //  * @param first
+    //  * @param last
+    //  * @return True if the insertion is legal:
+    //  * @return - The InputIterator elements are neighbours of the cluster
+    //  * @warning It only checks if the action is feasible. It doesn't check for convexity
+    //  */
+    // template <class InputIterator>
+    // bool is_insertable(Vertex_iterator i, InputIterator first, InputIterator last)
+    // {
+    //
+    // }
+    //
+    // /// Inserts the vertices in the range `[first, last)`
+    // /// before `i`.  The value type of points in the range
+    // /// `[first,last)` must be `Vertex_handle`.
+    // template <class InputIterator>
+    // bool is_insertable(Vertex_circulator i, InputIterator first, InputIterator last)
+    // {
+    //
+    // }
+    //
+    // /// Inserts the vertices in the range `[first, last)`
+    // /// before `i`.  The value type of points in the range
+    // /// `[first,last)` must be `Vertex_handle`.
+    // template <class InputIterator>
+    // void insert(Vertex_iterator i, InputIterator first, InputIterator last)
+    // {
+    //
+    //   vertex_container.insert(i, first, last);
+    // }
+    //
+    // /// Inserts the vertices in the range `[first, last)`
+    // /// before `i`.  The value type of points in the range
+    // /// `[first,last)` must be `Vertex_handle`.
+    // template <class InputIterator>
+    // void insert(Vertex_circulator i, InputIterator first, InputIterator last)
+    // {
+    //
+    //   this->insert(i.mod_iterator(), first, last);
+    // }
 
     // /// Has the same semantics as `p.insert(p.vertices_end(), q)`.
     // void push_back(const Vertex_handle& x) { vertex_container.insert(vertex_container.end(), x); }
@@ -132,7 +181,8 @@ namespace CC
     // }
     //
     // /// Erases the vertices in the range `[first, last)`.
-    // Vertex_iterator erase(Vertex_iterator first, Vertex_iterator last) { return vertex_container.erase(first, last); }
+    // Vertex_iterator erase(Vertex_iterator first, Vertex_iterator last) { return vertex_container.erase(first, last);
+    // }
     //
     // /// Erases the vertices in the range `[first, last)`.
     // void clear() { vertex_container.clear(); }
@@ -180,6 +230,35 @@ namespace CC
       Face_Description* fd = pMesh_->get_face_description(f);
       fd->Cluster_Id = cluster_id_;
       fd->is_Cluster_Assigned = true;
+    }
+
+    /**
+   *
+   * @param f Candidate face to check
+   * @param v f is an incident face of v.
+   * @param n_vertex N of vertex in common between face and cluster (1,2)
+   * @return True if Face and Cluster share exactly n_vertex vertexes
+   */
+    bool is_neighbor(Face_handle f, Vertex_circulator v, uint n_vertex)
+    {
+      Vertex_handle circ = *v;
+      Vertex_handle next_in_circulator = *(v += 1);
+      Vertex_handle prev_in_circulator = *(v -= 2);
+      int vertex_in_common = 0;
+      if(UTILS::belong_to_face(f, circ, prev_in_circulator) && !UTILS::belong_to_face(f, next_in_circulator, circ))
+      {
+        vertex_in_common = 2;
+      }
+      else if(UTILS::belong_to_face(f, next_in_circulator, circ) && !UTILS::belong_to_face(f, circ, prev_in_circulator))
+      {
+        vertex_in_common = 2;
+      }
+      else if(UTILS::belong_to_face(f, circ))
+      {
+        vertex_in_common = 1;
+      }
+
+      return (n_vertex==vertex_in_common);
     }
 
   private:
