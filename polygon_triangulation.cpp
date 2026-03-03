@@ -130,13 +130,14 @@ int main(int argc, char* argv[])
   try
   {
     po::options_description desc("Allowed options");
-    desc.add_options()("help", "produce help message")(
-      "ghiande", po::bool_switch(&ghiande_field_opt)->default_value(false), "uses complex field instead of basic")(
-      "plots", po::bool_switch(&view_plot_opt)->default_value(false), "display plots of intermediate/final steps")(
-      "b", po::value<float>(&angle_bound_opt)->default_value(0.4),
+    desc.add_options()
+    ("help", "produce help message")
+    ("ghiande", po::bool_switch(&ghiande_field_opt)->default_value(false), "uses complex field instead of basic")
+    ("plots", po::bool_switch(&view_plot_opt)->default_value(false), "display plots of intermediate/final steps")
+    ("b", po::value<float>(&angle_bound_opt)->default_value(0.14),
       "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or "
-      "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")(
-      "size", po::value<float>(&angle_bound_opt)->default_value(5.0), "size bound of trinagulation in meters")
+      "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")
+    ("size", po::value<float>(&size_bound_opt)->default_value(5.0), "size bound of triangulation in meters")
 
       ;
 
@@ -181,13 +182,13 @@ int main(int argc, char* argv[])
 
   // ((argc > 1) ? std::stof(argv[1]) : 0.4);
   std::cout << "b: " << angle_bound_opt << " , B: " << std::sqrt(0.25 / angle_bound_opt)
-            << " , alpha: " << std::asin(std::sqrt(angle_bound_opt)) * 180.0 / 3.141592653 << std::endl;
+            << " , alpha: " << std::asin(std::sqrt(angle_bound_opt)) * 180.0 / 3.141592653 << "°" << std::endl;
 
 
   // std::list<Polygon> polys;
   //  from polygon_wkt
 
-  if(view_plot_opt)
+  if(false)
   {
     MultiPoint perimeter_points;
     WKT_IO::get_perimeter(perimeter_points);
@@ -259,7 +260,7 @@ int main(int argc, char* argv[])
     CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
-  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(angle_bound_opt, 6.0)));
+  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(angle_bound_opt, size_bound_opt)));
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
