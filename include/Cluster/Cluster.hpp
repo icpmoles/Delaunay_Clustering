@@ -3,10 +3,11 @@
 //
 #ifndef DELAUNAY_CLUSTERING_CLUSTER_HPP
 #define DELAUNAY_CLUSTERING_CLUSTER_HPP
+#include <CGAL/Polygon_2.h>
+#include <iterator>
 #include "Cluster/Cluster_Circulator.hpp"
 #include "Convexification/Augmented_Mesh.hpp"
 #include "Convexification/utils.hpp"
-#include <iterator>
 
 namespace CC
 {
@@ -95,6 +96,31 @@ namespace CC
     bool is_insertable(const Vertex_circulator i, const Vertex_handle& q) const
     {
       return is_insertable(i.mod_iterator(), q);
+    }
+
+    /**
+     * Returns the future polygon if a new vertex or face is added
+     * @param v_new new vertex to insert
+     * @param i index where to insert before
+     * @return future polygon after adding a new vertex or face
+     * @note This assumes the is_insertable check was positive
+     */
+    Polygon get_future_polygon(Vertex_handle i, Vertex_handle v_new)
+    {
+      Polygon p;
+      Cluster_circulator first = this->vertices_circulator();
+      Cluster_circulator cursor = first;
+      do
+      {
+        if(v_new == i)
+        {
+          p.push_back(v_new->point());
+        }
+        p.push_back(cursor.get_point());
+      }
+      while(++cursor != first);
+
+      return p;
     }
 
     /// Inserts the vertex `q` before `i`. The return value points to
@@ -233,12 +259,12 @@ namespace CC
     }
 
     /**
-   *
-   * @param f Candidate face to check
-   * @param v f is an incident face of v.
-   * @param n_vertex N of vertex in common between face and cluster (1,2)
-   * @return True if Face and Cluster share exactly n_vertex vertexes
-   */
+     *
+     * @param f Candidate face to check
+     * @param v f is an incident face of v.
+     * @param n_vertex N of vertex in common between face and cluster (1,2)
+     * @return True if Face and Cluster share exactly n_vertex vertexes
+     */
     bool is_neighbor(Face_handle f, Vertex_circulator v, uint n_vertex)
     {
       Vertex_handle circ = *v;
@@ -258,7 +284,20 @@ namespace CC
         vertex_in_common = 1;
       }
 
-      return (n_vertex==vertex_in_common);
+      return (n_vertex == vertex_in_common);
+    }
+
+    /**
+     *
+     * @param f Candidate face to check
+     * @param i f is an incident face of i.
+     * @param n_vertex N of vertex in common between face and cluster (1,2)
+     * @return True if Face and Cluster share exactly n_vertex vertexes
+     */
+    bool is_neighbor(Face_handle f, Vertex_iterator i, uint n_vertex)
+    {
+      // TODO iterator to circulator tests
+      return false;
     }
 
   private:

@@ -6,14 +6,22 @@ project(Delaunay_Clustering)
 
 find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
 
+
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.45.0 COMPONENTS program_options)
+include_directories( ${Boost_INCLUDE_DIRS} )
+
 # create a target per cppfile
 create_single_source_cgal_program(polygon_triangulation.cpp)
 include_directories(polygon_triangulation include)
 
-if (CGAL_Qt5_FOUND)
-    target_link_libraries(polygon_triangulation PUBLIC CGAL::CGAL_Basic_viewer)
-    #  target_link_libraries(draw_triangulation_2 PUBLIC CGAL::CGAL_Basic_viewer)
-    #  target_link_libraries(star_conflict_zone PUBLIC CGAL::CGAL_Basic_viewer)
+if (CGAL_Qt5_FOUND AND Boost_FOUND)
+    target_link_libraries(polygon_triangulation PUBLIC CGAL::CGAL_Basic_viewer Boost::program_options)
 else ()
     message(STATUS "NOTICE: This project requires Qt5 and will not be compiled.")
 endif ()

@@ -148,13 +148,13 @@ namespace UTILS
   }
 
 
-    /**
+  /**
    *
    * @param f Face of interest
    * @param v1 Vertex
    * @return True if v1 is a vertex of f
    */
-inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
+  inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
   {
     if(f->vertex(0) == v1 || f->vertex(1) == v1 || f->vertex(2) == v1)
       return true;
@@ -206,7 +206,7 @@ inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
    * @param dest saving location
    * @return True if there is a common face that has v1 and v2 in CCW order, saves result in dest. False otherwise
    */
-  bool share_common_face(Vertex_handle v1, Vertex_handle v2, Face_handle &dest)
+  bool share_common_face(Vertex_handle v1, Vertex_handle v2, Face_handle& dest)
   {
     Face_Circulator first_face = v1->incident_faces();
     Face_Circulator circ = first_face;
@@ -230,7 +230,7 @@ inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
    * @param dest saving location
    * @return True if there is a common face that has v1,v2 and v3 in CCW order, saves result in dest. False otherwise
    */
-  bool share_common_face(Vertex_handle v1, Vertex_handle v2, Vertex_handle v3, Face_handle &dest)
+  bool share_common_face(Vertex_handle v1, Vertex_handle v2, Vertex_handle v3, Face_handle& dest)
   {
     Face_Circulator first_face = v1->incident_faces();
     Face_Circulator circ = first_face;
@@ -245,8 +245,6 @@ inline bool belong_to_face(const Face_handle f, const Vertex_handle v1)
     while(++circ != first_face);
     return false;
   }
-
-
 
 
 } // namespace UTILS

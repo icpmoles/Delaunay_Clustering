@@ -17,6 +17,7 @@
 #include <CGAL/min_quadrilateral_2.h>
 
 #include <boost/property_map/property_map.hpp>
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <unordered_map>
 
@@ -38,7 +39,7 @@ typedef std::unordered_map<Face_handle, double> AreaFaceMap;
 // typedef PS::Squared_distance_cost                                 Cost;
 
 // typedef CLS::Mesh_Augmented CDTwI;
-
+namespace po = boost::program_options;
 
 void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
 {
@@ -120,15 +121,66 @@ void generate_convex_set(const CDT& triangulation, int concave_steps)
 
 int main(int argc, char* argv[])
 {
-  bool view_plot = false;
+  bool view_plot_opt = false;
+  bool ghiande_field_opt = false;
 
-  float b((argc > 1) ? std::stof(argv[1]) : 0.4);
-  std::cout << "b: " << b << " , B: " << std::sqrt(0.25 / b)
-            << " , alpha: " << std::asin(std::sqrt(b)) * 180.0 / 3.141592653 << std::endl;
+  float angle_bound_opt;
+  float size_bound_opt;
+
+  try {
+
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help", "produce help message")
+        ("ghiande",po::bool_switch(&ghiande_field_opt)->default_value(false),"uses complex field instead of basic")
+        ("plots", po::bool_switch(&view_plot_opt)->default_value(false),"display plots of intermediate/final steps")
+        ("b", po::value<float>(&angle_bound_opt)->default_value(0.4), "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")
+        ("size", po::value<float>(&angle_bound_opt)->default_value(5.0), "size bound of trinagulation in meters")
+
+    ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+      std::cout << desc << "\n";
+      return 0;
+    }
+
+    if (vm.count("ghiande")) {
+      std::cout << "Using Complex Field" << ".\n";
+    } else
+    {
+      std::cout << "Using Simple Field" << ".\n";
+    }
+
+    if (vm.count("plots")) {
+      std::cout << "Showing Plots" << ".\n";
+    }
+
+    if (vm.count("b")) {
+      std::cout << "New aspect bound was set to "
+           << vm["b"].as<float>() << ".\n";
+    }
+  }
+  catch(std::exception& e) {
+    std::cerr << "error: " << e.what() << "\n";
+    return 1;
+  }
+  catch(...) {
+    std::cerr << "Exception of unknown type!\n";
+  }
+
+  // ((argc > 1) ? std::stof(argv[1]) : 0.4);
+  std::cout << "b: " << angle_bound_opt << " , B: " << std::sqrt(0.25 / angle_bound_opt)
+            << " , alpha: " << std::asin(std::sqrt(angle_bound_opt)) * 180.0 / 3.141592653 << std::endl;
+
+
   // std::list<Polygon> polys;
   //  from polygon_wkt
 
-  if(false)
+  if(view_plot_opt)
   {
     MultiPoint perimeter_points;
     WKT_IO::get_perimeter(perimeter_points);
@@ -139,7 +191,7 @@ int main(int argc, char* argv[])
     tri_workplace.insert(perimeter_points.begin(), perimeter_points.end());
     tri_workplace.insert(mp.begin(), mp.end());
     std::cout << "display naive triangulation" << std::endl << std::endl;
-    if(view_plot)
+    if(view_plot_opt)
       CGAL::draw(tri_workplace); // naive triangulation
   }
 
@@ -148,19 +200,19 @@ int main(int argc, char* argv[])
 
   // false for simple polygon
   // true for ghiande
-  if(false)
+  if(ghiande_field_opt)
     WKT_IO::get_full_field_as_polygon_wh(workplace_pwh_offset);
   else
     WKT_IO::get_simple_polygon_wh(workplace_pwh_offset);
   PP::center_coordinates(workplace_pwh_offset, workplace_pwh);
   std::cout << "show original field" << std::endl << std::endl;
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(workplace_pwh);
 
   PP::simplify_obstacles_naive(workplace_pwh, workplace_pwh_simple_obstacles, 1.0, 0.5);
   workplace_pwh = workplace_pwh_simple_obstacles;
   std::cout << "show simplified field" << std::endl << std::endl;
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(workplace_pwh);
 
 
@@ -178,7 +230,7 @@ int main(int argc, char* argv[])
 
   std::cout << "constrained triangulation depth: " << cdt_workplace.dimension() << std::endl;
   std::cout << "display constrained triangulation" << std::endl << std::endl;
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace);
 
 
@@ -189,22 +241,22 @@ int main(int argc, char* argv[])
   CGAL::mark_domain_in_triangulation(cdt_workplace, in_domain_workplace);
 
   get_stats(cdt_workplace, in_domain_workplace);
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace, in_domain_workplace);
 
 
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
-  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(b, 6.0)));
+  CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(angle_bound_opt, 6.0)));
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace);
 
 
@@ -218,7 +270,7 @@ int main(int argc, char* argv[])
   // test marker
   std::cout << "test marker" << std::endl;
   generate_convex_set(cdt_workplace, 2);
-  if(view_plot)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace);
 
 

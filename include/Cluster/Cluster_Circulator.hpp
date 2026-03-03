@@ -59,6 +59,8 @@ namespace CC
       CGAL_assertion(current_iterator() != ctnr->end());
       return *i;
     }
+    Vertex_handle get_vertex() { return *i; }
+    Point get_point() { return get_vertex()->point(); }
 
   private:
     // For cases where iterator is a pointer.

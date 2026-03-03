@@ -20,6 +20,14 @@
             </PerProfileState>
           </value>
         </entry>
+        <entry key="Release-Coverage">
+          <value>
+            <PerProfileState>
+              <option name="myQmlPath" value="/usr/lib/x86_64-linux-gnu/qt5/qml" />
+              <option name="myQtBinPath" value="/usr/lib/qt5/bin" />
+            </PerProfileState>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
