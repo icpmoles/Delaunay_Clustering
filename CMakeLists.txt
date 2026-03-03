@@ -7,14 +7,14 @@ project(Delaunay_Clustering)
 find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
 
 
-if(POLICY CMP0167)
+if (POLICY CMP0167)
     cmake_policy(SET CMP0167 NEW)
-endif()
+endif ()
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.45.0 COMPONENTS program_options)
-include_directories( ${Boost_INCLUDE_DIRS} )
+include_directories(${Boost_INCLUDE_DIRS})
 
 # create a target per cppfile
 create_single_source_cgal_program(polygon_triangulation.cpp)

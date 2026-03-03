@@ -16,8 +16,8 @@
 #include <CGAL/mark_domain_in_triangulation.h>
 #include <CGAL/min_quadrilateral_2.h>
 
-#include <boost/property_map/property_map.hpp>
 #include <boost/program_options.hpp>
+#include <boost/property_map/property_map.hpp>
 #include <iostream>
 #include <unordered_map>
 
@@ -127,48 +127,55 @@ int main(int argc, char* argv[])
   float angle_bound_opt;
   float size_bound_opt;
 
-  try {
-
+  try
+  {
     po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help", "produce help message")
-        ("ghiande",po::bool_switch(&ghiande_field_opt)->default_value(false),"uses complex field instead of basic")
-        ("plots", po::bool_switch(&view_plot_opt)->default_value(false),"display plots of intermediate/final steps")
-        ("b", po::value<float>(&angle_bound_opt)->default_value(0.4), "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")
-        ("size", po::value<float>(&angle_bound_opt)->default_value(5.0), "size bound of trinagulation in meters")
+    desc.add_options()("help", "produce help message")(
+      "ghiande", po::bool_switch(&ghiande_field_opt)->default_value(false), "uses complex field instead of basic")(
+      "plots", po::bool_switch(&view_plot_opt)->default_value(false), "display plots of intermediate/final steps")(
+      "b", po::value<float>(&angle_bound_opt)->default_value(0.4),
+      "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or "
+      "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")(
+      "size", po::value<float>(&angle_bound_opt)->default_value(5.0), "size bound of trinagulation in meters")
 
-    ;
+      ;
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help")) {
+    if(vm.count("help"))
+    {
       std::cout << desc << "\n";
       return 0;
     }
 
-    if (vm.count("ghiande")) {
+    if(vm.count("ghiande"))
+    {
       std::cout << "Using Complex Field" << ".\n";
-    } else
+    }
+    else
     {
       std::cout << "Using Simple Field" << ".\n";
     }
 
-    if (vm.count("plots")) {
+    if(vm.count("plots"))
+    {
       std::cout << "Showing Plots" << ".\n";
     }
 
-    if (vm.count("b")) {
-      std::cout << "New aspect bound was set to "
-           << vm["b"].as<float>() << ".\n";
+    if(vm.count("b"))
+    {
+      std::cout << "New aspect bound was set to " << vm["b"].as<float>() << ".\n";
     }
   }
-  catch(std::exception& e) {
+  catch(std::exception& e)
+  {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
   }
-  catch(...) {
+  catch(...)
+  {
     std::cerr << "Exception of unknown type!\n";
   }
 
