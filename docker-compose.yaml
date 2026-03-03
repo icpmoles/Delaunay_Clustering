@@ -3,6 +3,6 @@ services:
     build: .
     network_mode: host
     volumes:
-      - "./:/project/"
-      - "./bin:/project/build/bin"
+      - ./:/project_source/:ro
+      - ./bin:/project/build/bin:rw
     command: ["/bin/bash","/project/docker/entrypoint.sh"]

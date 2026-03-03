@@ -8,4 +8,12 @@ Requirements:
 
 # Docker
 
-'docker-compose run --remove-orphans triangulation_build'
+```
+docker-compose run --remove-orphans triangulation_build
+```
+
+Then run with:
+
+```
+./bin/polygon_triangulation --help
+```
