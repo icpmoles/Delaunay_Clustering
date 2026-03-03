@@ -2,18 +2,19 @@
 # This is the CMake script for compiling a CGAL application.
 
 cmake_minimum_required(VERSION 3.1...3.23)
+if (POLICY CMP0167) # Use upstream's FindBoost.cmake to find Boost libraries.
+    cmake_policy(SET CMP0167 NEW) # Use upstream's FindBoost.cmake to find Boost libraries.
+endif ()
+
 project(Delaunay_Clustering)
 
 find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
 
-
-if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-endif ()
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.45.0 COMPONENTS program_options)
+find_package(Boost 1.83.0 COMPONENTS program_options)
+message(STATUS "Boost: ${Boost_VERSION}")
 include_directories(${Boost_INCLUDE_DIRS})
 
 # create a target per cppfile

@@ -1,0 +1,5 @@
+/cmake-build-*/
+/build/
+/bin/
+Dockerfile
+docker-compose.yaml

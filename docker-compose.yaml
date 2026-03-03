@@ -1,0 +1,8 @@
+services:
+  triangulation_build:
+    build: .
+    network_mode: host
+    volumes:
+      - "./:/project/"
+      - "./bin:/project/build/bin"
+    command: ["/bin/bash","/project/docker/entrypoint.sh"]
