@@ -26,3 +26,11 @@ if (CGAL_Qt5_FOUND AND Boost_FOUND)
 else ()
     message(STATUS "NOTICE: This project requires Qt5 and will not be compiled.")
 endif ()
+
+install(TARGETS polygon_triangulation
+        EXPORT CGALTargets
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+# copy data files
+install(DIRECTORY "data/" DESTINATION bin/data)
