@@ -24,14 +24,8 @@ namespace AUM // Augmented Mesh
      */
     Augmented_Mesh(CDT cdt)
     {
-      std::cout << "@ CREATION of AUGM" << std::endl;
-      CGAL::draw(cdt);
       this->cdt_ = cdt;
-      std::cout << "AFTER COPY AUGM" << std::endl;
-      CGAL::draw(this->cdt_);
       populate_properties_();
-      std::cout << "AFTER POPULATION of AUGM" << std::endl;
-      CGAL::draw(this->cdt_);
     };
 
     /**
@@ -41,7 +35,6 @@ namespace AUM // Augmented Mesh
      */
     [[nodiscard]] Face_Description get_face_description(size_t i) const;
 
-    CDT get_cdt() { return this->cdt_; }
     CDT* get_cdt_ptr() { return &cdt_; }
 
     /**
@@ -89,7 +82,6 @@ namespace AUM // Augmented Mesh
     void populate_properties_();
 
 
-
     size_t get_vector_idx_(Face_handle f);
 
     void print_face_info(Face_handle f, bool print_vertexes);
@@ -100,6 +92,8 @@ namespace AUM // Augmented Mesh
      * @return number of faces still not assigned to a cluster
      */
     size_t reset_unassigned_faces();
+
+    CDT get_cdt() { return this->cdt_; }
 
     CDT cdt_;
     std::vector<Face_Description> Faces_Properties_;
@@ -358,11 +352,14 @@ namespace AUM // Augmented Mesh
     size_t i = 0;
     for(const Face_handle f : this->cdt_.finite_face_handles())
     {
-      Faces_Properties_.push_back({.Face_Id = i,
-                                   .Area = UTILS::get_area(f),
-                                   .is_Area_Calculated = true,
-                                   .is_Face_Assigned = true,
-                                   .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
+      Faces_Properties_.push_back({
+        .Face_Id = i,
+        .Area = UTILS::get_area(f),
+        .is_Area_Calculated = true,
+        .is_Face_Assigned = true,
+        .is_InDomain = f->is_in_domain(),
+        .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE
+      });
 
       f->set_time_stamp(i);
 
@@ -384,7 +381,8 @@ namespace AUM // Augmented Mesh
         // std::cout << "Found Inlier!" << std::endl << std::endl;
 
         return true;
-      } else
+      }
+      else
       {
         // std::cout << "Tested negative:" << std::endl;
       }

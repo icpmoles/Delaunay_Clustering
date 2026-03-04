@@ -68,25 +68,37 @@ namespace CC
      */
     void set(Vertex_iterator i, const Vertex_handle& q) { *i = q; }
 
+    bool can_be_assigned(Face_handle f) const
+    {
+      Face_Description* fd = pMesh_->get_face_description(f);
+      return (fd->is_Cluster_Assigned == false && fd->is_InDomain);
+    }
 
     /**
      *
      * @param v1
      * @param v2
-     * @return True if v1 and v2 belong to a common face in a CCW order
+     * @return True if v1 and v2 belong to a common face in a CCW order, which is in domain and still not assigned.
      */
-    bool is_insertable(const Vertex_handle v1, const Vertex_handle& v2) const
+    bool is_insertable(const Vertex_handle& v1, const Vertex_handle& v2, const Vertex_handle& v3) const
     {
       Face_handle f;
-      return UTILS::share_common_face(v1, v2, f);
+      bool success =  UTILS::share_common_face(v1, v2, v3, f) && f->is_in_domain() && can_be_assigned(f);
+      if(success)
+      {
+        std::cout << v1->point() <<" & " << v2->point() << " OK" << std::endl << "Face in common:" << std::endl;
+        UTILS::print_triangle_vertices(f);
+      }
+      return success;
     }
+
     /**
      *
      * @param i
      * @param q
      * @return True if i and q belong to a common face in a CCW order
      */
-    bool is_insertable(const Vertex_iterator i, const Vertex_handle& q) const { return this->is_insertable(*i, q); }
+    bool is_insertable(const Vertex_iterator i, const Vertex_handle& q) const { return this->is_insertable(*std::prev(i), *i, q); }
     /**
      *
      * @param i
@@ -95,7 +107,9 @@ namespace CC
      */
     bool is_insertable(const Vertex_circulator i, const Vertex_handle& q) const
     {
-      return is_insertable(i.mod_iterator(), q);
+      auto  next_i = i.get_next();
+      Vertex_iterator i_vit = i.mod_iterator();
+      return is_insertable(next_i, *i_vit, q);
     }
 
     /**
@@ -110,13 +124,14 @@ namespace CC
       Polygon p;
       Cluster_circulator first = this->vertices_circulator();
       Cluster_circulator cursor = first;
+      std::cout << "Circulator Starting at " << first.get_point();
       do
       {
-        if(v_new == i)
+        p.push_back(cursor.get_point());
+        if(cursor.get_vertex() == i)
         {
           p.push_back(v_new->point());
         }
-        p.push_back(cursor.get_point());
       }
       while(++cursor != first);
 

@@ -138,10 +138,7 @@ int main(int argc, char* argv[])
     ("b", po::value<float>(&angle_bound_opt)->default_value(0.14),
       "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or "
       "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")
-    ("size", po::value<float>(&size_bound_opt)->default_value(5.0), "size bound of triangulation in meters")
-
-      ;
-
+    ("size", po::value<float>(&size_bound_opt)->default_value(5.0), "size bound of triangulation in meters");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -215,13 +212,13 @@ int main(int argc, char* argv[])
     WKT_IO::get_simple_polygon_wh(workplace_pwh_offset);
   PP::center_coordinates(workplace_pwh_offset, workplace_pwh);
   std::cout << "show original field" << std::endl << std::endl;
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(workplace_pwh);
 
   PP::simplify_obstacles_naive(workplace_pwh, workplace_pwh_simple_obstacles, 1.0, 0.5);
   workplace_pwh = workplace_pwh_simple_obstacles;
   std::cout << "show simplified field" << std::endl << std::endl;
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(workplace_pwh);
 
 
@@ -239,7 +236,7 @@ int main(int argc, char* argv[])
 
   std::cout << "constrained triangulation depth: " << cdt_workplace.dimension() << std::endl;
   std::cout << "display constrained triangulation" << std::endl << std::endl;
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(cdt_workplace);
 
 
@@ -250,14 +247,14 @@ int main(int argc, char* argv[])
   CGAL::mark_domain_in_triangulation(cdt_workplace, in_domain_workplace);
 
   get_stats(cdt_workplace, in_domain_workplace);
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(cdt_workplace, in_domain_workplace);
 
 
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(cdt_workplace);
 
   std::cout << "Refining the domain..." << std::endl;
@@ -265,7 +262,7 @@ int main(int argc, char* argv[])
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   get_stats(cdt_workplace);
-  if(view_plot_opt)
+  if(false)
     CGAL::draw(cdt_workplace);
 
 

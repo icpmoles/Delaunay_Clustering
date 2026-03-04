@@ -154,6 +154,32 @@ namespace CC
     iterator mod_iterator() const { return i; }
     // Self min_circulator() const { return Self(ctnr); }
     const Container_Type* container() const { return ctnr; }
+
+    /**
+     *
+     * @return pointer to previous element of circulator
+     */
+    Vertex_handle get_prev() const
+    {
+      CGAL_assertion(ctnr != nullptr);
+      CGAL_assertion(current_iterator() != ctnr->end());
+      if(current_iterator() == ctnr->begin())
+        return *(ctnr->end());
+      return *(std::prev(i));
+    }
+
+    /**
+     *
+     * @return pointer to next element of circulator
+     */
+    Vertex_handle get_next() const
+    {
+      CGAL_assertion(ctnr != nullptr);
+      CGAL_assertion(current_iterator() != ctnr->end());
+      if(current_iterator() == ctnr->end())
+        return *(ctnr->begin());
+      return *(std::prev(i,-1));
+    }
   };
 
 

@@ -18,7 +18,7 @@ message(STATUS "Boost: ${Boost_VERSION}")
 include_directories(${Boost_INCLUDE_DIRS})
 
 # create a target per cppfile
-create_single_source_cgal_program(polygon_triangulation.cpp)
+create_single_source_cgal_program(src/polygon_triangulation.cpp)
 include_directories(polygon_triangulation include)
 
 if (CGAL_Qt5_FOUND AND Boost_FOUND)

@@ -13,6 +13,9 @@
 #include <CGAL/IO/WKT.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
+#include <CGAL/draw_polygon_2.h>
+// #include <CGAL/draw_polygon_set_2.h>
+// #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>
 #include <CGAL/Triangulation_2.h>
 #include <CGAL/circulator.h>
@@ -55,6 +58,7 @@ typedef CDT::Edge Edge;
 
 typedef CDT::Point Point;
 typedef CGAL::Polygon_2<K> Polygon;
+// typedef CGAL::Polygon_set_2<K> Polygon_set;
 typedef CGAL::Bbox_2 bbox_2;
 
 typedef CGAL::Polygon_with_holes_2<K> Polygon_wh;
@@ -122,9 +126,12 @@ typedef struct Face_Description
   bool is_Cluster_Assigned = false; // whether it's assigned to a cluster
   bool is_Face_Assigned = false; // whether the Face_Id is assigned
 
+  bool is_InDomain = false; // whether the Face is not an obstacle or outside the perimeter
+
+
   // walk metadata
 
-  unsigned Distance = UNEXPLORED_VALUE; // how many greedy steps without convexity
+  unsigned Distance = UNEXPLORED_VALUE; // OBSTACLE_VALUE / UNEXPLORED_VALUE depending on the value
 
 } Face_Description;
 
@@ -140,6 +147,11 @@ namespace UTILS
     return polygon.area();
   }
 
+  inline void print_vertex(const Vertex_handle v)
+  {
+    std::cout << v->point();
+  }
+
   inline void print_triangle_vertices(const Face_handle f)
   {
     std::cout << "1st Vertex " << f->vertex(0)->point() << std::endl;
@@ -149,12 +161,10 @@ namespace UTILS
 
   inline void print_face_description(const Face_Description& fd)
   {
-    std::cout << "ClusterID " << fd.Cluster_Id  << " [" << (fd.is_Cluster_Assigned ? "v" : "x") << "] "  << std::endl;
-    std::cout << "FaceId " << fd.Face_Id << " [" << (fd.is_Face_Assigned ? "v" : "x") << "] "  << std::endl;
-    std::cout << "Area " << fd.Area  << " [" << (fd.is_Area_Calculated ? "v" : "x") << "] "  << std::endl;
-    std::cout << "Distance " << fd.Distance  << std::endl;
-
-
+    std::cout << "ClusterID " << fd.Cluster_Id << " [" << (fd.is_Cluster_Assigned ? "v" : "x") << "] " << std::endl;
+    std::cout << "FaceId " << fd.Face_Id << " [" << (fd.is_Face_Assigned ? "v" : "x") << "] " << std::endl;
+    std::cout << "Area " << fd.Area << " [" << (fd.is_Area_Calculated ? "v" : "x") << "] " << std::endl;
+    std::cout << "Distance " << fd.Distance << std::endl;
   }
 
 
