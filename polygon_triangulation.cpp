@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
 {
   bool view_plot_opt = false;
   bool ghiande_field_opt = false;
+  // TODO: support arbitrary filename for field file
 
   float angle_bound_opt;
   float size_bound_opt;
@@ -273,13 +274,14 @@ int main(int argc, char* argv[])
   // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
   CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace);
   cdt_workplace_wi.iterate();
-  std::cout << "database" << std::endl << std::endl;
-
-  // test marker
-  std::cout << "test marker" << std::endl;
-  generate_convex_set(cdt_workplace, 2);
   if(view_plot_opt)
-    CGAL::draw(cdt_workplace);
+    cdt_workplace_wi.show_map(0);
+
+  // // test marker
+  // std::cout << "test marker" << std::endl;
+  // generate_convex_set(cdt_workplace, 2);
+  // if(view_plot_opt)
+  //   CGAL::draw(cdt_workplace);
 
 
   return 0;

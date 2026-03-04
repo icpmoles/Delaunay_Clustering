@@ -147,6 +147,16 @@ namespace UTILS
     std::cout << "3rd Vertex " << f->vertex(2)->point() << std::endl;
   }
 
+  inline void print_face_description(const Face_Description& fd)
+  {
+    std::cout << "ClusterID " << fd.Cluster_Id  << " [" << (fd.is_Cluster_Assigned ? "v" : "x") << "] "  << std::endl;
+    std::cout << "FaceId " << fd.Face_Id << " [" << (fd.is_Face_Assigned ? "v" : "x") << "] "  << std::endl;
+    std::cout << "Area " << fd.Area  << " [" << (fd.is_Area_Calculated ? "v" : "x") << "] "  << std::endl;
+    std::cout << "Distance " << fd.Distance  << std::endl;
+
+
+  }
+
 
   /**
    *

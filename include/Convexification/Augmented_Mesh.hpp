@@ -24,8 +24,14 @@ namespace AUM // Augmented Mesh
      */
     Augmented_Mesh(CDT cdt)
     {
-      this->cdt_ = std::move(cdt);
+      std::cout << "@ CREATION of AUGM" << std::endl;
+      CGAL::draw(cdt);
+      this->cdt_ = cdt;
+      std::cout << "AFTER COPY AUGM" << std::endl;
+      CGAL::draw(this->cdt_);
       populate_properties_();
+      std::cout << "AFTER POPULATION of AUGM" << std::endl;
+      CGAL::draw(this->cdt_);
     };
 
     /**
@@ -36,6 +42,7 @@ namespace AUM // Augmented Mesh
     [[nodiscard]] Face_Description get_face_description(size_t i) const;
 
     CDT get_cdt() { return this->cdt_; }
+    CDT* get_cdt_ptr() { return &cdt_; }
 
     /**
      *
@@ -55,6 +62,12 @@ namespace AUM // Augmented Mesh
 
 
     Face_Description* get_face_description(Face_handle f);
+    /**
+     *
+     * @param destination Where to save the Face_Handle if the procedure is successful
+     * @return if the call was successful
+     */
+    bool get_inlier_face_(Face_handle& destination) const;
 
   private:
     // /**
@@ -75,12 +88,7 @@ namespace AUM // Augmented Mesh
 
     void populate_properties_();
 
-    /**
-     *
-     * @param destination Where to save the Face_Handle if the procedure is successful
-     * @return if the call was successful
-     */
-    bool get_inlier_face_(Face_handle& destination) const;
+
 
     size_t get_vector_idx_(Face_handle f);
 
@@ -369,10 +377,16 @@ namespace AUM // Augmented Mesh
 
     do
     {
+      // UTILS::print_triangle_vertices(tentative);
       if(tentative->is_in_domain())
       {
         destination = tentative;
+        // std::cout << "Found Inlier!" << std::endl << std::endl;
+
         return true;
+      } else
+      {
+        // std::cout << "Tested negative:" << std::endl;
       }
     }
     while(++tentative != last);
