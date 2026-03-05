@@ -352,14 +352,12 @@ namespace AUM // Augmented Mesh
     size_t i = 0;
     for(const Face_handle f : this->cdt_.finite_face_handles())
     {
-      Faces_Properties_.push_back({
-        .Face_Id = i,
-        .Area = UTILS::get_area(f),
-        .is_Area_Calculated = true,
-        .is_Face_Assigned = true,
-        .is_InDomain = f->is_in_domain(),
-        .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE
-      });
+      Faces_Properties_.push_back({.Face_Id = i,
+                                   .Area = UTILS::get_area(f),
+                                   .is_Area_Calculated = true,
+                                   .is_Face_Assigned = true,
+                                   .is_InDomain = f->is_in_domain(),
+                                   .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
 
       f->set_time_stamp(i);
 

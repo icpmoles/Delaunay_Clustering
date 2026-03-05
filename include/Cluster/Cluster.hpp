@@ -80,13 +80,14 @@ namespace CC
      * @param v2
      * @return True if v1 and v2 belong to a common face in a CCW order, which is in domain and still not assigned.
      */
-    bool is_insertable( Vertex_handle v1, Vertex_handle v2,  Vertex_handle v3)
+    bool is_insertable(Vertex_handle v1, Vertex_handle v2, Vertex_handle v3)
     {
       Face_handle f;
-      bool success =  UTILS::share_common_face(v1, v2, v3, f) && f->is_in_domain() && can_be_assigned(f);
+      bool success = UTILS::share_common_face(v1, v2, v3, f) && f->is_in_domain() && can_be_assigned(f);
       if(success)
       {
-        std::cout << v1->point() <<" & " << v2->point()<<" & " << v3->point() << " OK" << std::endl << "Face in common:" << std::endl;
+        std::cout << v1->point() << " & " << v2->point() << " & " << v3->point() << " OK" << std::endl
+                  << "Face in common:" << std::endl;
         UTILS::print_triangle_vertices(f);
       }
       return success;
@@ -98,17 +99,17 @@ namespace CC
      * @param q
      * @return True if i and q belong to a common face in a CCW order
      */
-    bool is_insertable( Vertex_iterator i,  Vertex_handle& q)  { return this->is_insertable(*(i+=1), *i, q); }
+    bool is_insertable(Vertex_iterator i, Vertex_handle& q) { return this->is_insertable(*(i += 1), *i, q); }
     /**
      *
      * @param i
      * @param q
      * @return True if i and q belong to a common face in a CCW order
      */
-    bool is_insertable(Vertex_circulator i,  Vertex_handle& q)
+    bool is_insertable(Vertex_circulator i, Vertex_handle& q)
     {
       // auto  next_i = (i+=1);
-      Vertex_handle next_i = *(i+=1);
+      Vertex_handle next_i = *(i += 1);
 
       Vertex_iterator i_vit = i.mod_iterator();
       return is_insertable(next_i, *i_vit, q);

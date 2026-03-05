@@ -147,10 +147,7 @@ namespace UTILS
     return polygon.area();
   }
 
-  inline void print_vertex(const Vertex_handle v)
-  {
-    std::cout << v->point();
-  }
+  inline void print_vertex(const Vertex_handle v) { std::cout << v->point(); }
 
   inline void print_triangle_vertices(const Face_handle f)
   {

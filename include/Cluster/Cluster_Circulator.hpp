@@ -158,41 +158,43 @@ namespace CC
     /**
      *
      * @return pointer to previous element of circulator
+     * @note Yeah, the implementation is not really brilliant but it gets the job done
      */
     Vertex_handle get_prev() const
     {
       CGAL_assertion(ctnr != nullptr);
       CGAL_assertion(current_iterator() != ctnr->end());
-      if(current_iterator() == ctnr->begin())
-        return *(ctnr->end());
-      return *(std::prev(i));
+      const Vertex_handle v = *current_iterator()--;
+      ++current_iterator();
+      return v;
     }
 
-    // /**
-    //  *
-    //  * @return pointer to next element of circulator
-    //  */
-    // Vertex_handle get_next() const
-    // {
-    //   CGAL_assertion(ctnr != nullptr);
-    //   CGAL_assertion(current_iterator() != ctnr->end());
-    //   if(current_iterator() == ctnr->end())
-    //     return *(ctnr->begin());
-    //   // return *(std::next(i));
-    // }
+    /**
+     *
+     * @return pointer to next element of circulator
+     * @note Yeah, the implementation is not really brilliant but it gets the job done
+     */
+    Vertex_handle get_next() const
+    {
+      CGAL_assertion(ctnr != nullptr);
+      CGAL_assertion(current_iterator() != ctnr->end());
+      const Vertex_handle v = *current_iterator()++;
+      --current_iterator();
+      return v;
+    }
 
-   //  /**
-   // *
-   // * @return pointer to next element of circulator
-   // */
-   //  pointer next_ptr() const
-   //  {
-   //    CGAL_assertion(ctnr != nullptr);
-   //    CGAL_assertion(current_iterator() != ctnr->end());
-   //    if(current_iterator() == ctnr->end())
-   //      return *(ctnr->begin());
-   //    return *(std::prev(i,-1));
-   //  }
+    //  /**
+    // *
+    // * @return pointer to next element of circulator
+    // */
+    //  pointer next_ptr() const
+    //  {
+    //    CGAL_assertion(ctnr != nullptr);
+    //    CGAL_assertion(current_iterator() != ctnr->end());
+    //    if(current_iterator() == ctnr->end())
+    //      return *(ctnr->begin());
+    //    return *(std::prev(i,-1));
+    //  }
   };
 
 
