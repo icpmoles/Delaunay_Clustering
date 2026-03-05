@@ -73,114 +73,128 @@ namespace CM // Cluster Manager
       while(++cursor_c_v_print != start_c_v_print);
 #endif
 
-    CC::Cluster_circulator cursor_c_v;
-    const CC::Cluster_circulator start_c_v = cursor_c_v =
-      cluster_0.vertices_circulator(); //  cluster's vertexes cursor/start handles
+      CC::Cluster_circulator cursor_c_v;
+      const CC::Cluster_circulator start_c_v = cursor_c_v =
+        cluster_0.vertices_circulator(); //  cluster's vertexes cursor/start handles
 
-    int cluster_el_counter = 0;
-    do //  loop through all vertexes of cluster
-    {
-      // assert(seed_face->vertex(cluster_el_counter)==cursor_c_v.get_vertex());
-      Vertex_handle vertex_ = cursor_c_v.get_vertex();
-      Vertex_handle next_vertex_ = cursor_c_v.get_next();
-      assert(vertex_!=next_vertex_);
-      TDS_Vertex_Circulator cursor_f_v, start_f_v; //  face's vertexes cursor/start handles
-      cursor_f_v = start_f_v = vertex_->incident_vertices();
-      int neighbour_el_counter = 0;
-      do // loop through all vertex neighbours
+      int cluster_el_counter = 0;
+      bool all_neighbours_suitable = true;
+
+      do //  loop through all vertexes of cluster
       {
-        bool is_suitable = cluster_0.is_insertable(next_vertex_, vertex_, cursor_f_v);
-        UTILS::print_vertex(next_vertex_); std::cout << " && ";
-        UTILS::print_vertex(vertex_);
-        std::cout << " (cls:" << cluster_el_counter << "/neig:" << neighbour_el_counter << ") <--"
-                  << (is_suitable ? "-" : "x") << "--> ";
-        UTILS::print_vertex(cursor_f_v);
-        std::cout << std::endl;
-        if(is_suitable)
+        // assert(seed_face->vertex(cluster_el_counter)==cursor_c_v.get_vertex());
+        Vertex_handle vertex_ = cursor_c_v.get_vertex();
+        Vertex_handle next_vertex_ = cursor_c_v.get_next();
+        assert(vertex_ != next_vertex_);
+        TDS_Vertex_Circulator cursor_f_v, start_f_v; //  face's vertexes cursor/start handles
+        cursor_f_v = start_f_v = vertex_->incident_vertices();
+        int neighbour_el_counter = 0;
+        int cluster_vertex_has_suitable_neighbour = false;
+        do // loop through all vertex neighbours
         {
-          Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_f_v);
-          std::cout << "New Polygon: " << new_polygon;
-          CGAL::draw(new_polygon);
+          bool is_suitable = cluster_0.is_insertable(next_vertex_, vertex_, cursor_f_v);
+          UTILS::print_vertex(next_vertex_);
+          std::cout << " && ";
+          UTILS::print_vertex(vertex_);
+          std::cout << " (cls:" << cluster_el_counter << "/neig:" << neighbour_el_counter << ") <--"
+                    << (is_suitable ? "-" : "x") << "--> ";
+          UTILS::print_vertex(cursor_f_v);
+          std::cout << std::endl;
+          if(is_suitable)
+          {
+            Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_f_v);
+            std::cout << "New Polygon: " << new_polygon;
+            CGAL::draw(new_polygon);
+            cluster_vertex_has_suitable_neighbour = true;
+          }
+          std::cout << std::endl << std::endl;
+          neighbour_el_counter++;
         }
-        std::cout << std::endl << std::endl;
-        neighbour_el_counter++;
+        while(++cursor_f_v != start_f_v);
+        if(!cluster_vertex_has_suitable_neighbour)
+        {
+          all_neighbours_suitable = false;
+        }
+
+        cluster_el_counter++;
       }
-      while(++cursor_f_v != start_f_v);
+      while(++cursor_c_v != start_c_v);
 
-      cluster_el_counter++;
-    }
-    while(++cursor_c_v != start_c_v);
-    // Vertex_handle vertex_ = seed_face->vertex(i);
-    // Vertex_handle next_vertex_ = seed_face->vertex((i+1)%3);
-    //
-    // cursor_f_v = start_f_v = vertex_->incident_vertices();
-    //
-    // do
-    // {
-    //   // if (cluster_0.is_insertable(cursor_c,vertex_))
-    //   // {
-    //   bool is_suitable = cluster_0.is_insertable(next_vertex_,vertex_,cursor_f_v);
-    //
-    //   UTILS::print_vertex(vertex_);
-    //   std::cout << " ("<< i<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
-    //   UTILS::print_vertex(cursor_f_v);
-    //   std::cout  << std::endl;
-    //
-    //   if(is_suitable)
-    //   {
-    //     Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_v);
-    //     std::cout  << std::endl << new_polygon;
-    //     CGAL::draw(new_polygon);
-    //   }
-    //
-    //   std::cout << std::endl << std::endl;
-    //   // }
-    //
-    // } while (++cursor_f_v != start_f_v); // loop through all vertex neighbours
-  };
+      if(all_neighbours_suitable)
+      {
+        std::cout << "==== Inflation Possible" << std::endl;
+      }
+      // Vertex_handle vertex_ = seed_face->vertex(i);
+      // Vertex_handle next_vertex_ = seed_face->vertex((i+1)%3);
+      //
+      // cursor_f_v = start_f_v = vertex_->incident_vertices();
+      //
+      // do
+      // {
+      //   // if (cluster_0.is_insertable(cursor_c,vertex_))
+      //   // {
+      //   bool is_suitable = cluster_0.is_insertable(next_vertex_,vertex_,cursor_f_v);
+      //
+      //   UTILS::print_vertex(vertex_);
+      //   std::cout << " ("<< i<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
+      //   UTILS::print_vertex(cursor_f_v);
+      //   std::cout  << std::endl;
+      //
+      //   if(is_suitable)
+      //   {
+      //     Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_v);
+      //     std::cout  << std::endl << new_polygon;
+      //     CGAL::draw(new_polygon);
+      //   }
+      //
+      //   std::cout << std::endl << std::endl;
+      //   // }
+      //
+      // } while (++cursor_f_v != start_f_v); // loop through all vertex neighbours
+    };
 
-  std::cout << "Generated a total of " << n_clusters - 1 << " clusters" << std::endl;
-
-}
-
-inline void Cluster_Manager::show_map()
-{
-  std::cout << "SHOWING MAP PTR" << std::endl;
-  CGAL::draw(*mesh_.get_cdt_ptr());
-
-  // NOTE: draw with copy of cdt is bugged, not sure if from my end or from the library
-  // std::cout << "SHOWING MAP COPY" << std::endl;
-  // CGAL::draw(mesh_.get_cdt());
-}
-
-inline void Cluster_Manager::show_map(size_t cluster_id)
-{
-  typedef std::unordered_map<Face_handle, bool> FaceOwnershipMap;
-  FaceOwnershipMap in_free_space_map;
-  int counter = 0;
-  int total_counter = 0;
-  for(const Face_handle f : mesh_.get_cdt_ptr()->all_face_handles())
-  { //  &&
-    if(f->is_in_domain() && mesh_.get_face_description(f)->Cluster_Id == cluster_id)
-    {
-      std::cout << "show_map: Found inlier n°" << counter << std::endl;
-
-      UTILS::print_triangle_vertices(f);
-      UTILS::print_face_description(*mesh_.get_face_description(f));
-      in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
-      counter++;
-    }
-    else
-    {
-      in_free_space_map.insert(std::pair<Face_handle, bool>(f, false));
-    }
-    total_counter++;
+    std::cout << "Generated a total of " << n_clusters - 1 << " clusters" << std::endl;
   }
-  const boost::associative_property_map<FaceOwnershipMap> in_free_space(in_free_space_map);
-  std::cout << "PRINTING WITH CLST_ID: " << cluster_id << ", MATCHING:" << counter << "/" << total_counter << std::endl;
 
-  CGAL::draw(*mesh_.get_cdt_ptr(), in_free_space);
-}
+  inline void Cluster_Manager::show_map()
+  {
+    std::cout << "SHOWING MAP PTR" << std::endl;
+    CGAL::draw(*mesh_.get_cdt_ptr());
+
+    // NOTE: draw with copy of cdt is bugged, not sure if from my end or from the library
+    // std::cout << "SHOWING MAP COPY" << std::endl;
+    // CGAL::draw(mesh_.get_cdt());
+  }
+
+  inline void Cluster_Manager::show_map(size_t cluster_id)
+  {
+    typedef std::unordered_map<Face_handle, bool> FaceOwnershipMap;
+    FaceOwnershipMap in_free_space_map;
+    int counter = 0;
+    int total_counter = 0;
+    for(const Face_handle f : mesh_.get_cdt_ptr()->all_face_handles())
+    { //  &&
+      if(f->is_in_domain() && mesh_.get_face_description(f)->Cluster_Id == cluster_id)
+      {
+        std::cout << "show_map: Found inlier n°" << counter << std::endl;
+
+        UTILS::print_triangle_vertices(f);
+        UTILS::print_face_description(*mesh_.get_face_description(f));
+        in_free_space_map.insert(std::pair<Face_handle, bool>(f, true));
+        counter++;
+      }
+      else
+      {
+        in_free_space_map.insert(std::pair<Face_handle, bool>(f, false));
+      }
+      total_counter++;
+    }
+    const boost::associative_property_map<FaceOwnershipMap> in_free_space(in_free_space_map);
+    std::cout << "PRINTING WITH CLST_ID: " << cluster_id << ", MATCHING:" << counter << "/" << total_counter
+              << std::endl;
+
+    CGAL::draw(*mesh_.get_cdt_ptr(), in_free_space);
+  }
 
 } // namespace CM
 #endif // TRIANGULATION_2_EXAMPLES_CLUSTER_H
