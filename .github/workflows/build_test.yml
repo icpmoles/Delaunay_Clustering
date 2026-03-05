@@ -25,6 +25,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: RUN
+      - name: Compile
         run: |
-          docker run -v "./:/project_source/:ro" -v "./bin:/project/build/bin:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ghcr.io/icpmoles/delaunay_clustering:polygon_extension 
+          docker run -v "./:/project_source/:ro" -v "./common_build_dir:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ghcr.io/icpmoles/delaunay_clustering:polygon_extension 
+
+      - name: Test
+        run: |
+          ./common_build_dir/build_dir/install/bin/polygon_triangulation --b=0.125 --size=5
+          ./common_build_dir/build_dir_debug/install/bin/polygon_triangulation --b=0.125 --size=5
+

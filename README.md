@@ -26,7 +26,7 @@ cd build_dir/install/bin/
 
 ```
 docker-compose build triangulation_build  
-docker run -v "./:/project_source/:ro" -v "./bin:/project/build_dir/install/bin:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=none building_environment-triangulation_build
+docker run -v "./:/project_source/:ro" -v "./bin:/project/common_build_dir/build_dir/install/bin:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=none building_environment-triangulation_build
 ```
 
 Then run with:
