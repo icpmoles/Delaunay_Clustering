@@ -32,6 +32,16 @@ jobs:
         run: |
           docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ghcr.io/icpmoles/delaunay_clustering:polygon_extension 
 
+      - name: install dependencies
+        run: | 
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+          libcgal-dev=5.6-1build3 \
+          libcgal-qt5-dev=5.6-1build3 \
+          libboost-program-options1.83-dev=1.83.0-2.1ubuntu3.2 \
+          make=4.3-4.1build2 \
+          cmake=3.28.3-1build7 \
+          g++=4:13.2.0-7ubuntu1 
+
       - name: Test
         run: |
           ./build/build_dir/install/bin/polygon_triangulation --b=0.125 --size=5
