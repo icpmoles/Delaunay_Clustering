@@ -53,24 +53,24 @@ namespace CM // Cluster Manager
       n_clusters++;
       std::cout << std::endl;
 
-#if defined(DEBUG_MODE)
+#ifndef NDEBUG
       CC::Cluster_circulator cursor_c_v_print;
       const CC::Cluster_circulator start_c_v_print = cursor_c_v_print =
         cluster_0.vertices_circulator(); //  cluster's vertexes cursor/start handles
       std::cout << "======== Testing Circulator" << std::endl;
       do
       {
-        UTILS::print_vertex(cursor_c_v_print.get_vertex());
+
+        UTILS::print_vertex(*cursor_c_v_print);
         std::cout << " 's next is: ";
         UTILS::print_vertex(cursor_c_v_print.get_next());
         std::cout << " , test if modified: ";
 
-        UTILS::print_vertex(cursor_c_v_print.get_vertex());
+        UTILS::print_vertex(*cursor_c_v_print);
 
         std::cout << std::endl;
       }
       while(++cursor_c_v_print != start_c_v_print);
-    }
 #endif
 
     CC::Cluster_circulator cursor_c_v;
@@ -83,12 +83,14 @@ namespace CM // Cluster Manager
       // assert(seed_face->vertex(cluster_el_counter)==cursor_c_v.get_vertex());
       Vertex_handle vertex_ = cursor_c_v.get_vertex();
       Vertex_handle next_vertex_ = cursor_c_v.get_next();
+      assert(vertex_!=next_vertex_);
       TDS_Vertex_Circulator cursor_f_v, start_f_v; //  face's vertexes cursor/start handles
       cursor_f_v = start_f_v = vertex_->incident_vertices();
       int neighbour_el_counter = 0;
       do // loop through all vertex neighbours
       {
         bool is_suitable = cluster_0.is_insertable(next_vertex_, vertex_, cursor_f_v);
+        UTILS::print_vertex(next_vertex_); std::cout << " && ";
         UTILS::print_vertex(vertex_);
         std::cout << " (cls:" << cluster_el_counter << "/neig:" << neighbour_el_counter << ") <--"
                   << (is_suitable ? "-" : "x") << "--> ";
