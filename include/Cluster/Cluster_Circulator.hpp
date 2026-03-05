@@ -165,7 +165,7 @@ namespace CC
       CGAL_assertion(ctnr != nullptr);
       CGAL_assertion(current_iterator() != ctnr->end());
       Self tmp = *this;
-      Vertex_handle v =  *(tmp -= 1);
+      Vertex_handle v = *(tmp -= 1);
       tmp += 1;
       return v;
     }
@@ -180,7 +180,7 @@ namespace CC
       CGAL_assertion(ctnr != nullptr);
       CGAL_assertion(current_iterator() != ctnr->end());
       Self tmp = *this;
-      Vertex_handle v =  *(tmp += 1);
+      Vertex_handle v = *(tmp += 1);
       tmp -= 1;
       return v;
     }

@@ -1,6 +1,9 @@
 name: build_test.yml
 on:
-  push
+  push:
+    paths-ignore:
+      - "docs"
+      - ".idea"
 
 env:
   REGISTRY: ghcr.io
