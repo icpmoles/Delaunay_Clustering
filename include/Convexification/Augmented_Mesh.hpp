@@ -188,8 +188,8 @@ namespace AUM // Augmented Mesh
       for(const Vertex_handle v : this->Clusters_[cluster_id])
       {
         std::cout << "vertex of interest: " << v->point() << std::endl;
-        Vertex_Circulator first_vertex = v->incident_vertices();
-        Vertex_Circulator circ = first_vertex;
+        TDS_Vertex_Circulator first_vertex = v->incident_vertices();
+        TDS_Vertex_Circulator circ = first_vertex;
         int vertex_counter = 0;
         do
         {

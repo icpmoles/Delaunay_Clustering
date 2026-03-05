@@ -49,41 +49,63 @@ namespace CM // Cluster Manager
       std::cout << "Found inlier" << std::endl;
       UTILS::print_triangle_vertices(seed_face);
       CC::Cluster cluster_0(seed_face, &mesh_, n_clusters);
+      assert(mesh_.get_face_description(seed_face)->Cluster_Id==n_clusters);
       n_clusters++;
-      assert(mesh_.get_face_description(seed_face)->Cluster_Id==initial_cluster_id);
       std::cout << std::endl;
-      for (int i = 0; i < 1; i++) //  loop through all 3 vertexes of first seed
+      CC::Cluster_circulator start_c_v, cursor_c_v;
+      start_c_v = cursor_c_v = cluster_0.vertices_circulator(); //  cluster's vertexes cursor/start handles
+
+      int cluster_el_counter = 0;
+      do //  loop through all vertexes of cluster
       {
 
-        Vertex_Circulator cursor_c, end_c;
-        Vertex_handle vertex_ = seed_face->vertex(i);
-        Vertex_handle next_vertex_ = seed_face->vertex(i+1);
 
-        cursor_c = end_c = vertex_->incident_vertices();
-
-        do
+        //
+        Vertex_handle vertex_ = cursor_c_v.get_vertex();
+        Vertex_handle next_vertex_ = *(cursor_c_v+=1);
+        TDS_Vertex_Circulator cursor_f_v, start_f_v; //  face's vertexes cursor/start handles
+        cursor_f_v = start_f_v = vertex_->incident_vertices();
+        int neighbour_el_counter = 0;
+        do // loop through all vertex neighbours
         {
-          // if (cluster_0.is_insertable(cursor_c,vertex_))
-          // {
-          bool is_suitable = cluster_0.is_insertable(next_vertex_,vertex_,cursor_c);
-
+          bool is_suitable = cluster_0.is_insertable(next_vertex_, vertex_, cursor_f_v);
           UTILS::print_vertex(vertex_);
-          std::cout << " ("<< i<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
-          UTILS::print_vertex(cursor_c);
+          std::cout << " (cls:"<< cluster_el_counter << "/neig:" << neighbour_el_counter<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
+          UTILS::print_vertex(cursor_f_v);
           std::cout  << std::endl;
 
-          if(is_suitable)
-          {
-            Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_c);
-            std::cout  << std::endl << new_polygon;
-            CGAL::draw(new_polygon);
-          }
+          neighbour_el_counter++;
+        } while (++cursor_f_v != start_f_v);
 
-          std::cout << std::endl << std::endl;
-          // }
-
-        } while (++cursor_c != end_c);
-      }
+        cluster_el_counter++;
+      } while (++cursor_c_v != start_c_v);
+      // Vertex_handle vertex_ = seed_face->vertex(i);
+      // Vertex_handle next_vertex_ = seed_face->vertex((i+1)%3);
+      //
+      // cursor_f_v = start_f_v = vertex_->incident_vertices();
+      //
+      // do
+      // {
+      //   // if (cluster_0.is_insertable(cursor_c,vertex_))
+      //   // {
+      //   bool is_suitable = cluster_0.is_insertable(next_vertex_,vertex_,cursor_f_v);
+      //
+      //   UTILS::print_vertex(vertex_);
+      //   std::cout << " ("<< i<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
+      //   UTILS::print_vertex(cursor_f_v);
+      //   std::cout  << std::endl;
+      //
+      //   if(is_suitable)
+      //   {
+      //     Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_v);
+      //     std::cout  << std::endl << new_polygon;
+      //     CGAL::draw(new_polygon);
+      //   }
+      //
+      //   std::cout << std::endl << std::endl;
+      //   // }
+      //
+      // } while (++cursor_f_v != start_f_v); // loop through all vertex neighbours
 
 
     };

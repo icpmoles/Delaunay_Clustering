@@ -168,18 +168,31 @@ namespace CC
       return *(std::prev(i));
     }
 
-    /**
-     *
-     * @return pointer to next element of circulator
-     */
-    Vertex_handle get_next() const
-    {
-      CGAL_assertion(ctnr != nullptr);
-      CGAL_assertion(current_iterator() != ctnr->end());
-      if(current_iterator() == ctnr->end())
-        return *(ctnr->begin());
-      return *(std::prev(i,-1));
-    }
+    // /**
+    //  *
+    //  * @return pointer to next element of circulator
+    //  */
+    // Vertex_handle get_next() const
+    // {
+    //   CGAL_assertion(ctnr != nullptr);
+    //   CGAL_assertion(current_iterator() != ctnr->end());
+    //   if(current_iterator() == ctnr->end())
+    //     return *(ctnr->begin());
+    //   // return *(std::next(i));
+    // }
+
+   //  /**
+   // *
+   // * @return pointer to next element of circulator
+   // */
+   //  pointer next_ptr() const
+   //  {
+   //    CGAL_assertion(ctnr != nullptr);
+   //    CGAL_assertion(current_iterator() != ctnr->end());
+   //    if(current_iterator() == ctnr->end())
+   //      return *(ctnr->begin());
+   //    return *(std::prev(i,-1));
+   //  }
   };
 
 

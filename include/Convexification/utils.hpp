@@ -109,8 +109,8 @@ typedef CGAL::Container_from_circulator<Face_Circulator> Face_Container;
 typedef CGAL::Triangulation_ds_edge_circulator_2<Tds> Edge_Circulator;
 typedef CGAL::Container_from_circulator<Edge_Circulator> Edge_Container;
 
-typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> Vertex_Circulator;
-typedef CGAL::Container_from_circulator<Vertex_Circulator> Vertex_Container;
+typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> TDS_Vertex_Circulator;
+typedef CGAL::Container_from_circulator<TDS_Vertex_Circulator> Vertex_Container;
 typedef Vertex_Container::iterator Vertex_Iterator;
 
 typedef struct Face_Description
