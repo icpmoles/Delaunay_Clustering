@@ -1,4 +1,4 @@
-Requirements:
+# Build Requirements:
 
 - CMAKE
 - CGAL 5.6.3
@@ -22,7 +22,7 @@ cd build_dir/install/bin/
 ./polygon_triangulation
 ```
 
-# Docker Alternative
+## Docker Alternative
 
 ```
 docker-compose build triangulation_build  
@@ -35,4 +35,13 @@ Then run with:
 ./bin/polygon_triangulation --help
 ```
 
+# Run
 
+After building the binaries can be shared. To run them install the dependencies:
+
+```
+sudo apt update
+sudo apt install \
+    libcgal-qt5-dev \
+    libcgal-dev
+```

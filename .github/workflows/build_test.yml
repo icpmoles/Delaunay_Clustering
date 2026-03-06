@@ -35,7 +35,8 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-          libqt5svg5
+          libcgal-qt5-dev \
+          libcgal-dev
 
       - name: Test
         run: |
