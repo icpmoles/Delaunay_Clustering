@@ -32,12 +32,10 @@ jobs:
         run: |
           docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ghcr.io/icpmoles/delaunay_clustering:polygon_extension 
 
-      #      - name: install dependencies
-      #        run: |
-      #          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-      #          libcgal-dev=5.6-1build3 \
-      #          libcgal-qt5-dev=5.6-1build3 \
-      #          libboost-program-options1.83-dev=1.83.0-2.1ubuntu3.2
+            - name: install dependencies
+              run: |
+                sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+                libqt5svg5
 
       - name: Test
         run: |
