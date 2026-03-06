@@ -26,17 +26,21 @@ namespace CM // Cluster Manager
     /**
      *
      * @param cdt Constrained Delauney Triangulation to use as a base for the new Structure
+     * @param show_plots Wheter to show plots or not
      */
-    Cluster_Manager(CDT cdt) : mesh_(cdt) {}
+    Cluster_Manager(CDT cdt, bool show_plots = false) : mesh_(cdt) { show_plots_ = show_plots; }
     void show_map(size_t cluster_id);
     void show_map();
     void iterate();
 
     ~Cluster_Manager() = default;
+    bool get_show_plots() { return show_plots_; }
+    void set_show_plots(bool show_plots) { show_plots_ = show_plots; }
 
   private:
     AUM::Augmented_Mesh mesh_;
     std::vector<CC::Cluster> clusters_;
+    bool show_plots_ = false;
   };
 
 
@@ -104,7 +108,8 @@ namespace CM // Cluster Manager
           {
             Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_f_v);
             std::cout << "New Polygon: " << new_polygon;
-            CGAL::draw(new_polygon);
+            if(show_plots_)
+              CGAL::draw(new_polygon);
             cluster_vertex_has_suitable_neighbour = true;
           }
           std::cout << std::endl << std::endl;

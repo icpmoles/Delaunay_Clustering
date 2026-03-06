@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
   // test database
 
   // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
-  CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace);
+  CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace, view_plot_opt);
   cdt_workplace_wi.iterate();
   if(view_plot_opt)
     cdt_workplace_wi.show_map(0);
