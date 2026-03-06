@@ -184,19 +184,6 @@ namespace CC
       tmp -= 1;
       return v;
     }
-
-    //  /**
-    // *
-    // * @return pointer to next element of circulator
-    // */
-    //  pointer next_ptr() const
-    //  {
-    //    CGAL_assertion(ctnr != nullptr);
-    //    CGAL_assertion(current_iterator() != ctnr->end());
-    //    if(current_iterator() == ctnr->end())
-    //      return *(ctnr->begin());
-    //    return *(std::prev(i,-1));
-    //  }
   };
 
 

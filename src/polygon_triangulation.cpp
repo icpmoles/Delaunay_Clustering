@@ -27,97 +27,7 @@
 #include "Convexification/utils.hpp"
 #include "Convexification/wkt_import.hpp"
 
-
-// namespace PS = CGAL::Polyline_simplification_2;
-
-
-typedef std::unordered_map<Face_handle, bool> BooleanFaceMap;
-typedef std::unordered_map<Face_handle, double> AreaFaceMap;
-
-
-// typedef PS::Stop_below_count_ratio_threshold                      Stop;
-// typedef PS::Squared_distance_cost                                 Cost;
-
-// typedef CLS::Mesh_Augmented CDTwI;
 namespace po = boost::program_options;
-
-void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
-{
-  int face_count = 0;
-  int indomain_face_count = 0;
-  for(Face_handle f : triangulation.finite_face_handles())
-  {
-    if(get(map, f))
-      ++indomain_face_count;
-    ++face_count;
-  }
-  std::cout << std::endl << std::endl << "polygon indomain faces: " << indomain_face_count << std::endl;
-  std::cout << "polygon total faces: " << face_count << std::endl << std::endl;
-}
-
-void get_stats(const CDT& triangulation)
-{
-  int face_count = 0;
-  int indomain_face_count = 0;
-  for(Face_handle f : triangulation.finite_face_handles())
-  {
-    if(f->is_in_domain())
-      ++indomain_face_count;
-    ++face_count;
-  }
-  std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << indomain_face_count << std::endl;
-  std::cout << "polygon total faces (w/o map): " << face_count << std::endl << std::endl;
-}
-
-
-void generate_funky_set(const CDT& triangulation, int n)
-{
-  int fa = 0;
-  for(const Face_handle f : triangulation.finite_face_handles())
-  {
-    if(fa % n == 0 && f->is_in_domain())
-      f->set_time_stamp(true);
-    else
-      f->set_time_stamp(false);
-
-    fa++;
-  }
-}
-
-
-double get_best_greedy(Face_handle f)
-{
-
-
-  Polygon triangle;
-  triangle.push_back(f->vertex(0)->point());
-  triangle.push_back(f->vertex(1)->point());
-  triangle.push_back(f->vertex(2)->point());
-  // f->set_area(area*100);
-  return triangle.area();
-}
-
-void retrieve_best(Face_handle f) { std::cout << "dummy" << std::endl; }
-
-
-void generate_convex_set(const CDT& triangulation, int concave_steps)
-{
-  // typedef std::list<Face_handle> face_group;
-  // std::map<int, face_group> convex_sets;
-  // Face_handle face = triangulation.all_faces_begin();
-
-
-  for(Face_handle f : triangulation.finite_face_handles())
-  {
-    get_best_greedy(f);
-  }
-
-  // for (Face_handle f : triangulation.finite_face_handles())
-  // {
-  //   retrieve_best(f);
-  // }
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -131,14 +41,13 @@ int main(int argc, char* argv[])
   try
   {
     po::options_description desc("Allowed options");
-    desc.add_options()
-    ("help", "produce help message")
-    ("ghiande", po::bool_switch(&ghiande_field_opt)->default_value(false), "uses complex field instead of basic")
-    ("plots", po::bool_switch(&view_plot_opt)->default_value(false), "display plots of intermediate/final steps")
-    ("b", po::value<float>(&angle_bound_opt)->default_value(0.14),
+    desc.add_options()("help", "produce help message")(
+      "ghiande", po::bool_switch(&ghiande_field_opt)->default_value(false), "uses complex field instead of basic")(
+      "plots", po::bool_switch(&view_plot_opt)->default_value(false), "display plots of intermediate/final steps")(
+      "b", po::value<float>(&angle_bound_opt)->default_value(0.14),
       "aspect bound: \n Refer to: CGAL::Delaunay_mesh_size_criteria_2 or "
-      "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")
-    ("size", po::value<float>(&size_bound_opt)->default_value(5.0), "size bound of triangulation in meters");
+      "https://doc.cgal.org/5.6.3/Mesh_2/classCGAL_1_1Delaunay__mesh__size__criteria__2.html for more information")(
+      "size", po::value<float>(&size_bound_opt)->default_value(5.0), "size bound of triangulation in meters");
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -246,14 +155,14 @@ int main(int argc, char* argv[])
 
   CGAL::mark_domain_in_triangulation(cdt_workplace, in_domain_workplace);
 
-  get_stats(cdt_workplace, in_domain_workplace);
+  UTILS::get_stats(cdt_workplace, in_domain_workplace);
   if(false)
     CGAL::draw(cdt_workplace, in_domain_workplace);
 
 
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
-  get_stats(cdt_workplace);
+  UTILS::get_stats(cdt_workplace);
   if(false)
     CGAL::draw(cdt_workplace);
 
@@ -261,24 +170,17 @@ int main(int argc, char* argv[])
   CGAL::refine_Delaunay_mesh_2(cdt_workplace, CGAL::parameters::criteria(Criteria(angle_bound_opt, size_bound_opt)));
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
-  get_stats(cdt_workplace);
+  UTILS::get_stats(cdt_workplace);
   if(false)
     CGAL::draw(cdt_workplace);
 
 
-  // test database
+  // test cluster manager
 
-  // std::vector<Face_Description> database =  CLS::populate_area(cdt_workplace);
   CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace, view_plot_opt);
   cdt_workplace_wi.iterate();
   if(view_plot_opt)
     cdt_workplace_wi.show_map(0);
-
-  // // test marker
-  // std::cout << "test marker" << std::endl;
-  // generate_convex_set(cdt_workplace, 2);
-  // if(view_plot_opt)
-  //   CGAL::draw(cdt_workplace);
 
 
   return 0;

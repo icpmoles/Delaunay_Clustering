@@ -88,21 +88,6 @@ typedef std::vector<Edge> MultiEdge_t;
  * List of Edges (in CCW order)
  */
 typedef std::vector<Face_handle> MultiFace_t;
-
-// /**
-//  * Collection of Clusters
-//  */
-// typedef std::vector<Cluster_t> MultiCluster_t;
-
-// For circulator of (mesh) vertex type
-// Why not using a standard Polygon2 type? Well, the polygon2 only allows iterating across points(x,y)
-// losing the face information
-// typedef MultiVertex_t::iterator MV_I;
-// typedef CGAL::Circulator_from_iterator<MV_I> Cluster_Circulator;
-// typedef CGAL::Container_from_circulator<Cluster_Circulator> Cluster_Container;
-// typedef Cluster_Container::iterator Cluster_Iterator;
-
-
 typedef CGAL::Triangulation_ds_face_circulator_2<Tds> Face_Circulator;
 typedef CGAL::Container_from_circulator<Face_Circulator> Face_Container;
 
@@ -112,6 +97,9 @@ typedef CGAL::Container_from_circulator<Edge_Circulator> Edge_Container;
 typedef CGAL::Triangulation_ds_vertex_circulator_2<Tds> TDS_Vertex_Circulator;
 typedef CGAL::Container_from_circulator<TDS_Vertex_Circulator> Vertex_Container;
 typedef Vertex_Container::iterator Vertex_Iterator;
+
+typedef std::unordered_map<Face_handle, bool> BooleanFaceMap;
+typedef std::unordered_map<Face_handle, double> AreaFaceMap;
 
 typedef struct Face_Description
 {
@@ -137,6 +125,35 @@ typedef struct Face_Description
 
 namespace UTILS
 {
+
+  void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
+  {
+    int face_count = 0;
+    int indomain_face_count = 0;
+    for(Face_handle f : triangulation.finite_face_handles())
+    {
+      if(get(map, f))
+        ++indomain_face_count;
+      ++face_count;
+    }
+    std::cout << std::endl << std::endl << "polygon indomain faces: " << indomain_face_count << std::endl;
+    std::cout << "polygon total faces: " << face_count << std::endl << std::endl;
+  }
+
+  void get_stats(const CDT& triangulation)
+  {
+    int face_count = 0;
+    int indomain_face_count = 0;
+    for(Face_handle f : triangulation.finite_face_handles())
+    {
+      if(f->is_in_domain())
+        ++indomain_face_count;
+      ++face_count;
+    }
+    std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << indomain_face_count << std::endl;
+    std::cout << "polygon total faces (w/o map): " << face_count << std::endl << std::endl;
+  }
+
   inline double get_area(Face_handle f)
   {
     Polygon polygon;

@@ -162,77 +162,6 @@ namespace CC
     Vertex_iterator insert(Vertex_circulator i, const Vertex_handle& q) { return this->insert(i.mod_iterator(), q); }
 
 
-    // /**
-    //  *
-    //  * @tparam InputIterator
-    //  * @param i
-    //  * @param first
-    //  * @param last
-    //  * @return True if the insertion is legal:
-    //  * @return - The InputIterator elements are neighbours of the cluster
-    //  * @warning It only checks if the action is feasible. It doesn't check for convexity
-    //  */
-    // template <class InputIterator>
-    // bool is_insertable(Vertex_iterator i, InputIterator first, InputIterator last)
-    // {
-    //
-    // }
-    //
-    // /// Inserts the vertices in the range `[first, last)`
-    // /// before `i`.  The value type of points in the range
-    // /// `[first,last)` must be `Vertex_handle`.
-    // template <class InputIterator>
-    // bool is_insertable(Vertex_circulator i, InputIterator first, InputIterator last)
-    // {
-    //
-    // }
-    //
-    // /// Inserts the vertices in the range `[first, last)`
-    // /// before `i`.  The value type of points in the range
-    // /// `[first,last)` must be `Vertex_handle`.
-    // template <class InputIterator>
-    // void insert(Vertex_iterator i, InputIterator first, InputIterator last)
-    // {
-    //
-    //   vertex_container.insert(i, first, last);
-    // }
-    //
-    // /// Inserts the vertices in the range `[first, last)`
-    // /// before `i`.  The value type of points in the range
-    // /// `[first,last)` must be `Vertex_handle`.
-    // template <class InputIterator>
-    // void insert(Vertex_circulator i, InputIterator first, InputIterator last)
-    // {
-    //
-    //   this->insert(i.mod_iterator(), first, last);
-    // }
-
-    // /// Has the same semantics as `p.insert(p.vertices_end(), q)`.
-    // void push_back(const Vertex_handle& x) { vertex_container.insert(vertex_container.end(), x); }
-    //
-    // /// Erases the vertex pointed to by `i`.
-    // Vertex_iterator erase(Vertex_iterator i) { return vertex_container.erase(i); }
-    //
-    // /// Erases the vertex pointed to by `i`.
-    // Vertex_circulator erase(Vertex_circulator i)
-    // {
-    //   auto it = vertex_container.erase(i.mod_iterator());
-    //   if(it == vertex_container.end())
-    //   {
-    //     it = vertex_container.begin();
-    //   }
-    //   return Vertex_circulator(&vertex_container, it);
-    // }
-    //
-    // /// Erases the vertices in the range `[first, last)`.
-    // Vertex_iterator erase(Vertex_iterator first, Vertex_iterator last) { return vertex_container.erase(first, last);
-    // }
-    //
-    // /// Erases the vertices in the range `[first, last)`.
-    // void clear() { vertex_container.clear(); }
-
-    /// Reverses the orientation of the polygon. The vertex pointed to
-    ///  by `p.vertices_begin()` remains the same.
     void reverse_orientation()
     {
       if(vertex_container.size() <= 1)
@@ -319,7 +248,9 @@ namespace CC
     }
 
   private:
-    MultiVertex_t vertex_container;
+    MultiVertex_t vertex_container; // main container with the list of vertexes that describe the boundary in CCW order
+    std::vector<MultiVertex_t> free_boundaries; // contains a list of CCW ordered list of vertexes describing the
+                                                // various sections where the cluster can still expand
     AUM::Augmented_Mesh* pMesh_;
     uint cluster_id_;
   };
