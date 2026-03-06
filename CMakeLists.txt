@@ -10,7 +10,7 @@ project(Delaunay_Clustering)
 
 find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
 
-set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.83.0 COMPONENTS program_options)
