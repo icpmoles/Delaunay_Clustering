@@ -52,10 +52,26 @@ namespace CM // Cluster Manager
     {
       std::cout << "Found inlier" << std::endl;
       UTILS::print_triangle_vertices(seed_face);
-      CC::Cluster cluster_0(seed_face, &mesh_, n_clusters);
-      assert(mesh_.get_face_description(seed_face)->Cluster_Id == n_clusters);
-      n_clusters++;
+      CC::Cluster cluster_0(seed_face, &mesh_, n_clusters++);
+      // assert(mesh_.get_face_description(seed_face)->Cluster_Id == n_clusters);
       std::cout << std::endl;
+
+      if(cluster_0.refresh_free_boundaries())
+      {
+        std::cout << "Cluster has free boundaries" << std::endl;
+        std::vector<Boundary_t> list_boundaries = cluster_0.get_free_boundaries();
+        int boundary_index = 0;
+        for(auto boundary : list_boundaries)
+        {
+          std::cout << boundary_index << "): ";
+          for(auto vertex : boundary.first)
+          {
+            std::cout << *vertex << " -> ";
+          }
+          boundary_index++;
+          std::cout << std::endl;
+        }
+      }
 
 #ifndef NDEBUG
       CC::Cluster_circulator cursor_c_v_print;
@@ -129,36 +145,9 @@ namespace CM // Cluster Manager
       {
         std::cout << "==== Inflation Possible" << std::endl;
       }
-      // Vertex_handle vertex_ = seed_face->vertex(i);
-      // Vertex_handle next_vertex_ = seed_face->vertex((i+1)%3);
-      //
-      // cursor_f_v = start_f_v = vertex_->incident_vertices();
-      //
-      // do
-      // {
-      //   // if (cluster_0.is_insertable(cursor_c,vertex_))
-      //   // {
-      //   bool is_suitable = cluster_0.is_insertable(next_vertex_,vertex_,cursor_f_v);
-      //
-      //   UTILS::print_vertex(vertex_);
-      //   std::cout << " ("<< i<< ") <--" << (is_suitable ? "-" : "x") << "--> " ;
-      //   UTILS::print_vertex(cursor_f_v);
-      //   std::cout  << std::endl;
-      //
-      //   if(is_suitable)
-      //   {
-      //     Polygon new_polygon = cluster_0.get_future_polygon(vertex_, cursor_v);
-      //     std::cout  << std::endl << new_polygon;
-      //     CGAL::draw(new_polygon);
-      //   }
-      //
-      //   std::cout << std::endl << std::endl;
-      //   // }
-      //
-      // } while (++cursor_f_v != start_f_v); // loop through all vertex neighbours
     };
 
-    std::cout << "Generated a total of " << n_clusters - 1 << " clusters" << std::endl;
+    std::cout << "Generated a total of " << n_clusters << " clusters" << std::endl;
   }
 
   inline void Cluster_Manager::show_map()

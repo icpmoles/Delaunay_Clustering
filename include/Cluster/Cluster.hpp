@@ -5,7 +5,9 @@
 #define DELAUNAY_CLUSTERING_CLUSTER_HPP
 #include <CGAL/Polygon_2.h>
 #include <iterator>
+
 #include "Cluster/Cluster_Circulator.hpp"
+#include "Cluster/Solution.hpp"
 #include "Convexification/Augmented_Mesh.hpp"
 #include "Convexification/utils.hpp"
 
@@ -78,7 +80,8 @@ namespace CC
      *
      * @param v1
      * @param v2
-     * @return True if v1 and v2 belong to a common face in a CCW order, which is in domain and still not assigned.
+     * @param v3
+     * @return True if v1, v2 and v3 belong to a common face in a CCW order, which is in domain and still not assigned.
      */
     bool is_insertable(Vertex_handle v1, Vertex_handle v2, Vertex_handle v3)
     {
@@ -127,7 +130,7 @@ namespace CC
       Polygon p;
       Cluster_circulator first = this->vertices_circulator();
       Cluster_circulator cursor = first;
-      std::cout << "Circulator Starting at " << first.get_point();
+      // std::cout << "Circulator Starting at " << first.get_point();
       do
       {
         p.push_back(cursor.get_point());
@@ -247,12 +250,120 @@ namespace CC
       return false;
     }
 
+    /**
+     *
+     * @return True if it's still possible to expand, False otherwise
+     *
+     * Refreshes the list of free boundaries
+     * Conditions for expansion: at least one neighbouring face is not an obstacle or assigned yet
+     */
+    bool refresh_free_boundaries()
+    {
+      bool is_possible = false;
+      bool start_new_boundary = true;
+      BoundaryId_t boundary_counter = 0;
+      // Linear check
+      Vertex_circulator start, cursor;
+      start = cursor = this->vertices_circulator();
+      do
+      {
+        if(is_neigbour_face_free(cursor.get_vertex(), cursor.get_next()))
+        {
+          is_possible = true;
+          std::cout << "Found free face " << cursor.get_vertex()->point() << std::endl;
+          if(start_new_boundary) // free_boundaries_.end()->size()>0)
+          {
+            std::cout << "Creating new boundary " << std::endl;
+
+            free_boundaries_.push_back(Boundary_t(std::vector<Vertex_handle>{cursor.get_vertex()}, boundary_counter));
+          }
+          else
+          {
+            std::cout << "Continuing last boundary " << std::endl;
+            free_boundaries_.back().first.push_back(cursor.get_vertex());
+          }
+
+          start_new_boundary = false;
+        }
+        else
+        {
+          start_new_boundary = true;
+          boundary_counter++;
+        }
+      }
+      while(++cursor != start);
+
+
+      return is_possible;
+    }
+
+    /**
+     *
+     * @param v Vertex
+     * @param v_next , next of v in CCW order
+     * @return True if the face that has v_next, v in CCW order is free to expand
+     */
+    bool is_neigbour_face_free(Vertex_handle v, Vertex_handle v_next)
+    {
+      Face_Circulator cursor_v_f, start_v_f; // vertexes  incident faces' cursor/start handles
+      cursor_v_f = start_v_f = v->incident_faces();
+      do // loop through all vertex neighbours
+      {
+        if(UTILS::belong_to_face(cursor_v_f, v_next, v))
+        {
+          Face_Description* fd = pMesh_->get_face_description(cursor_v_f);
+          if(fd->is_Cluster_Assigned == false && fd->is_InDomain)
+            return true;
+        }
+      }
+      while(++cursor_v_f != start_v_f);
+      return false;
+    }
+
+    // getter for free_boundaries_
+    std::vector<Boundary_t>* get_free_boundaries_ptr() { return &free_boundaries_; }
+
+    // getter for free_boundaries_
+    std::vector<Boundary_t> get_free_boundaries() { return free_boundaries_; }
+
+    /**
+     *
+     * @return True if it was capable of finding feasible (convex) solutions, False otherwise
+     */
+    bool refresh_solutions()
+    {
+      bool conv_sol = true;
+      for(Boundary_t boundary : free_boundaries_)
+      {
+        bool is_boundary_expandable = true;
+        for(auto it = boundary.first.begin(); it != boundary.first.end(); ++it)
+        {
+          if(!is_neigbour_face_free(*it, *std::next(it)))
+            is_boundary_expandable = false;
+        }
+
+        if(is_boundary_expandable)
+        {
+          Cluster_Solution sol(this->cluster_id_, expansion_solutions_[boundary].size() + 1);
+
+          // TODO: Create exploration logic
+          expansion_solutions_[boundary].push_back(sol);
+        }
+      }
+
+      return conv_sol;
+    }
+
+
   private:
     MultiVertex_t vertex_container; // main container with the list of vertexes that describe the boundary in CCW order
-    std::vector<MultiVertex_t> free_boundaries; // contains a list of CCW ordered list of vertexes describing the
-                                                // various sections where the cluster can still expand
+    std::vector<Boundary_t> free_boundaries_; // contains a list of CCW ordered list of vertexes describing the
+                                              // various sections where the cluster can still expand
     AUM::Augmented_Mesh* pMesh_;
     uint cluster_id_;
+
+    std::map<Boundary_t, std::vector<Cluster_Solution>>
+      expansion_solutions_; // for each boundary you can have multiple Solution
   };
 
 

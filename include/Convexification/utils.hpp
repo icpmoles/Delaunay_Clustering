@@ -101,6 +101,9 @@ typedef Vertex_Container::iterator Vertex_Iterator;
 typedef std::unordered_map<Face_handle, bool> BooleanFaceMap;
 typedef std::unordered_map<Face_handle, double> AreaFaceMap;
 
+typedef uint BoundaryId_t;
+typedef std::pair<MultiVertex_t, BoundaryId_t> Boundary_t;
+
 typedef struct Face_Description
 {
   // payload
