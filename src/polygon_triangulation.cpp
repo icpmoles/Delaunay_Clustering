@@ -174,6 +174,18 @@ int main(int argc, char* argv[])
   if(false)
     CGAL::draw(cdt_workplace);
 
+  // test combinatorial exploration
+  std::vector<std::string> test_v{"1", "2", "3", "4"};
+  std::vector<std::pair<uint, uint>> indexes_ = UTILS::get_combinatorial_indexes(test_v.size());
+  std::cout << "PRINTING" << std::endl;
+  for(std::pair<uint, uint> idx : indexes_)
+  {
+    for(auto it = std::next(test_v.begin(), idx.first); it != std::prev(test_v.end(), idx.second); ++it)
+    {
+      std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+  }
 
   // test cluster manager
 

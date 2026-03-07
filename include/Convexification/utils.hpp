@@ -283,6 +283,42 @@ namespace UTILS
     return false;
   }
 
+  /**
+   *
+   * @param n size of the vector of interest
+   * @return n of possible combinations of contiguous sub-vector of size at least 2 up to n
+   * @note Application of https://en.wikipedia.org/wiki/Triangular_number
+   */
+  inline uint get_max_combinatorial_options(const uint n) { return n * (n - 1) / 2; }
+
+
+  /**
+   *
+   * @param vector_size size of vector of interest
+   * @param min_l minimum length of the combination bounds. Must be at least two
+   * @return n order list (from the longest to the shortest) of pair of offsets to bound the iteration of the vector.
+   */
+  std::vector<std::pair<uint, uint>> get_combinatorial_indexes(const uint vector_size, const uint min_l = 2)
+  {
+    if(min_l < 2)
+      throw std::runtime_error("min_l too low");
+    else
+    {
+      std::vector<std::pair<uint, uint>> result;
+      uint necessary_depth = vector_size + 1 - min_l;
+      // loops through all depths
+      for(int poss_opt = 1; poss_opt <= necessary_depth; poss_opt++)
+      {
+        // for each depth we have #depth options
+        for(int op = 0; op < poss_opt; op++)
+        {
+          result.push_back(std::pair<uint, uint>(op, poss_opt - 1 - op));
+        }
+      }
+      return result;
+    }
+  }
+
 
 } // namespace UTILS
 

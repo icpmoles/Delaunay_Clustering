@@ -1,6 +1,5 @@
 # Created by the script cgal_create_cmake_script
 # This is the CMake script for compiling a CGAL application.
-
 cmake_minimum_required(VERSION 3.1...3.23)
 if (POLICY CMP0167) # Use upstream's FindBoost.cmake to find Boost libraries.
     cmake_policy(SET CMP0167 NEW) # Use upstream's FindBoost.cmake to find Boost libraries.

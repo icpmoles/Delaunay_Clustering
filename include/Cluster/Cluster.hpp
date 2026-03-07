@@ -160,6 +160,27 @@ namespace CC
       // return i;
     }
 
+    /**
+     *
+     * @param i iterator
+     * @return Circulator starting from the same vertex pointed by i
+     */
+    Vertex_circulator iterator_to_circulator(Vertex_iterator i)
+    {
+      Vertex_circulator c_cursor, c_end;
+      c_cursor = c_end = this->vertices_circulator();
+      do
+      {
+        if(*c_cursor == *i)
+        {
+          return c_cursor;
+        }
+      }
+      while(++c_cursor != c_end);
+
+      throw std::runtime_error("Couldn't find iterator in this cluster");
+    }
+
     /// Inserts the vertex `q` before `i`. The return value points to
     /// the inserted vertex.
     Vertex_iterator insert(Vertex_circulator i, const Vertex_handle& q) { return this->insert(i.mod_iterator(), q); }
@@ -211,43 +232,50 @@ namespace CC
     /**
      *
      * @param f Candidate face to check
-     * @param v f is an incident face of v.
-     * @param n_vertex N of vertex in common between face and cluster (1,2)
-     * @return True if Face and Cluster share exactly n_vertex vertexes
+     * @param v f needs to be an incident face of v.
+     * @param n_vertex N of vertex in common between face and cluster (1  ≤ n  ≤ 2)
+     * @return True if Face and Cluster share EXACTLY n_vertex vertexes
      */
     bool is_neighbor(Face_handle f, Vertex_circulator v, uint n_vertex)
     {
-      Vertex_handle circ = *v;
-      Vertex_handle next_in_circulator = *(v += 1);
-      Vertex_handle prev_in_circulator = *(v -= 2);
-      int vertex_in_common = 0;
-      if(UTILS::belong_to_face(f, circ, prev_in_circulator) && !UTILS::belong_to_face(f, next_in_circulator, circ))
+      if(n_vertex == 1 || n_vertex == 2)
       {
-        vertex_in_common = 2;
-      }
-      else if(UTILS::belong_to_face(f, next_in_circulator, circ) && !UTILS::belong_to_face(f, circ, prev_in_circulator))
-      {
-        vertex_in_common = 2;
-      }
-      else if(UTILS::belong_to_face(f, circ))
-      {
-        vertex_in_common = 1;
-      }
+        Vertex_handle circ = v.get_vertex();
+        Vertex_handle next_in_circulator = v.get_next();
+        Vertex_handle prev_in_circulator = v.get_prev();
+        int vertex_in_common = 0;
+        if(UTILS::belong_to_face(f, circ, prev_in_circulator) && !UTILS::belong_to_face(f, next_in_circulator, circ))
+        {
+          vertex_in_common = 2;
+        }
+        else if(UTILS::belong_to_face(f, next_in_circulator, circ) &&
+                !UTILS::belong_to_face(f, circ, prev_in_circulator))
+        {
+          vertex_in_common = 2;
+        }
+        else if(UTILS::belong_to_face(f, circ))
+        {
+          vertex_in_common = 1;
+        }
 
-      return (n_vertex == vertex_in_common);
+        return (n_vertex == vertex_in_common);
+      }
+      else
+      {
+        throw std::invalid_argument("n_vertex must be 1 or 2");
+      }
     }
 
     /**
      *
      * @param f Candidate face to check
-     * @param i f is an incident face of i.
-     * @param n_vertex N of vertex in common between face and cluster (1,2)
-     * @return True if Face and Cluster share exactly n_vertex vertexes
+     * @param v f needs to be an incident face of v.
+     * @param n_vertex N of vertex in common between face and cluster (1  ≤ n  ≤ 2)
+     * @return True if Face and Cluster share EXACTLY n_vertex vertexes
      */
     bool is_neighbor(Face_handle f, Vertex_iterator i, uint n_vertex)
     {
-      // TODO iterator to circulator tests
-      return false;
+      return is_neighbor(f, this->iterator_to_circulator(i), n_vertex);
     }
 
     /**
@@ -332,27 +360,26 @@ namespace CC
      */
     bool refresh_solutions()
     {
-      bool conv_sol = true;
+      bool conv_sol = false;
       for(Boundary_t boundary : free_boundaries_)
       {
         bool is_boundary_expandable = true;
-        for(auto it = boundary.first.begin(); it != boundary.first.end(); ++it)
-        {
-          if(!is_neigbour_face_free(*it, *std::next(it)))
-            is_boundary_expandable = false;
-        }
 
-        if(is_boundary_expandable)
+        // we don't need to check if the whole boundary is feasible. Only from start to end-1 because the check
+        // always involves 2 vertexes (from which we derive the external face)
+        Cluster_Solution sol(this->cluster_id_, this->vertex_container, expansion_solutions_[boundary].size() + 1);
+
+        for(auto it = boundary.first.begin(); it != std::prev(boundary.first.end()); ++it)
         {
-          Cluster_Solution sol(this->cluster_id_, expansion_solutions_[boundary].size() + 1);
+
 
           // TODO: Create exploration logic
-          expansion_solutions_[boundary].push_back(sol);
         }
+        expansion_solutions_[boundary].push_back(sol);
       }
 
       return conv_sol;
-    }
+    };
 
 
   private:

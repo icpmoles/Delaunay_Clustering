@@ -13,8 +13,8 @@ namespace CC
   class Cluster_Solution
   {
   public:
-    explicit Cluster_Solution(const int cluster_id, const int solution_id = 0) :
-        solution_id_(solution_id), father_cluster_id_(cluster_id)
+    explicit Cluster_Solution(const uint cluster_id, MultiVertex_t original_full_boundary, const uint solution_id = 0) :
+        solution_id_(solution_id), father_cluster_id_(cluster_id), old_boundary_(original_full_boundary)
     {
     }
     Cluster_Solution(Cluster_Solution const& rhs, const int solution_id)
@@ -47,6 +47,7 @@ namespace CC
       convexity_checked_ = true;
       return this->convexity_;
     };
+
 
   private:
     MultiVertex_t new_boundary_;
