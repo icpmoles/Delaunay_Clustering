@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Compile
         run: |
-          docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ${{ env.REGISTRY }}/${{ IMAGE_NAME }}
+          docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: install dependencies for running
         run: |
