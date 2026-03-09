@@ -30,9 +30,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Compile
         run: |
-          docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ghcr.io/icpmoles/delaunay_clustering:polygon_extension 
+          DOCKER_CONTAINER="echo "${{IMAGE_NAME}}" | tr '[:upper:]' '[:lower:]'"
+          docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ${{ env.REGISTRY }}/${DOCKER_CONTAINER}
 
-      - name: install dependencies
+      - name: install dependencies for running
         run: |
           sudo apt-get update && sudo apt-get install -y --no-install-recommends \
           libcgal-qt5-dev \
