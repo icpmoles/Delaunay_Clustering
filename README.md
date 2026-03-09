@@ -4,6 +4,7 @@
 - CGAL 5.6.3
 - Boost Libraries
 - QT5
+- libmetis-dev
 
 Tested on Ubuntu 24.04
 
@@ -25,14 +26,14 @@ cd build_dir/install/bin/
 ## Docker Alternative
 
 ```
-docker-compose build triangulation_build  
-docker run -v "./:/project_source/:ro" -v "./bin:/project/common_build_dir/build_dir/install/bin:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=none building_environment-triangulation_build
+docker-compose build 
+docker-compose up
 ```
 
 Then run with:
 
 ```
-./bin/polygon_triangulation --help
+.bin/build_dir/install/bin/polygon_triangulation --help
 ```
 
 # Run
@@ -43,5 +44,6 @@ After building the binaries can be shared. To run them install the dependencies:
 sudo apt update
 sudo apt install \
     libcgal-qt5-dev \
-    libcgal-dev
+    libcgal-dev \
+    libmetis-dev
 ```

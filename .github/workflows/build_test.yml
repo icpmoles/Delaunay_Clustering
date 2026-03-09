@@ -36,7 +36,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y --no-install-recommends \
           libcgal-qt5-dev \
-          libcgal-dev
+          libcgal-dev \
+          libmetis-dev
 
       - name: Test
         run: |

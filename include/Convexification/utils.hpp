@@ -14,7 +14,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/draw_polygon_2.h>
-#include <parmetis.h>
+#include <metis.h>
 // #include <CGAL/draw_polygon_set_2.h>
 // #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>

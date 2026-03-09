@@ -8,7 +8,6 @@ endif ()
 project(Delaunay_Clustering)
 
 find_package(CGAL REQUIRED OPTIONAL_COMPONENTS Qt5)
-find_package(MPI REQUIRED)
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
@@ -21,27 +20,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 create_single_source_cgal_program(src/polygon_triangulation.cpp)
 include_directories(polygon_triangulation include)
 
-### PAR/METIS OPTIONS
-target_include_directories(polygon_triangulation PRIVATE
-        /usr/include/parmetis
-        /usr/include/metis
-)
 
 if (CGAL_Qt5_FOUND AND Boost_FOUND)
     target_link_libraries(polygon_triangulation PRIVATE
             CGAL::CGAL_Basic_viewer
             Boost::program_options
-            MPI::MPI_C
-            parmetis
+            metis
     )
-
 else ()
-    if (!CGAL_Qt5_FOUND)
-        message(STATUS "NOTICE: This project requires Qt5 and will not be compiled.")
-    endif ()
-    if (!Boost_FOUND)
-        message(STATUS "NOTICE: This project requires Boost Program Options and will not be compiled.")
-    endif ()
+    message(STATUS "NOTICE: This project requires Qt5 and Boost Program Options and will not be compiled.")
 endif ()
 
 install(TARGETS polygon_triangulation
