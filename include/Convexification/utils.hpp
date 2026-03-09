@@ -5,7 +5,6 @@
 #ifndef TRIANGULATION_2_EXAMPLES_UTILS_H
 #define TRIANGULATION_2_EXAMPLES_UTILS_H
 
-#include <parmetis.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_size_criteria_2.h>
@@ -15,6 +14,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/draw_polygon_2.h>
+#include <parmetis.h>
 // #include <CGAL/draw_polygon_set_2.h>
 // #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>
