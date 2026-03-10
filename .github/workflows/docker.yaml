@@ -41,10 +41,21 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      # taken from https://github.com/orgs/community/discussions/166006#discussioncomment-13753790
+      - name: Check if Dockerfile changed
+        id: docker_changes
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^Dockerfile/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
       # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see [Usage](https://github.com/docker/build-push-action#usage) in the README of the `docker/build-push-action` repository.
       # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
       - name: Build and push Docker image
+        if: steps.docker_changes.outputs.changed == 'true'
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
@@ -52,5 +63,36 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      #  build_binary:
+      #    runs-on: ubuntu-latest
+      #    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
+      #    permissions:
+      #      contents: read
+      #      packages: write
+      #      attestations: write
+      #      id-token: write
+      #    steps:
+      #      - name: Checkout repository
+      #        uses: actions/checkout@v5
+      #      - name: Log in to the Container registry
+      #        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      #        with:
+      #          registry: ${{ env.REGISTRY }}
+      #          username: ${{ github.actor }}
+      #          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compile
+        run: |
+          docker run -v "./:/project_source/:ro" -v "./build:/project/common_build_dir/:rw"  --entrypoint="/project_source/docker/entrypoint.sh"  --network=host ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: install dependencies for running
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+          libcgal-qt5-dev \
+          libcgal-dev \
+          libmetis-dev
+
+      - name: Test
+        run: |
+          ./build/build_dir/install/bin/polygon_triangulation --b=0.125 --size=5
+          ./build/build_dir_debug/install/bin/polygon_triangulation --b=0.125 --size=5
 

@@ -3,8 +3,8 @@ name: building_environment
 services:
   triangulation_build:
     build: .
-    network_mode: host
+    network_mode: none
     volumes:
       - ./:/project_source/:ro
-      - ./bin:/project/common_build_dir/:rw
+      - ./build:/project/common_build_dir/:rw
     command: ["/bin/bash","/project_source/docker/entrypoint.sh"]
