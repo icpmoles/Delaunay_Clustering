@@ -14,7 +14,6 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/draw_polygon_2.h>
-#include <metis.h>
 // #include <CGAL/draw_polygon_set_2.h>
 // #include <CGAL/Polygon_set_2.h>
 #include <CGAL/Polyline_simplification_2/simplify.h>
@@ -129,8 +128,14 @@ typedef struct Face_Description
 
 namespace UTILS
 {
-
-  void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
+  /**
+   *
+   * @param triangulation
+   * @param map
+   * @return pair with (total face_count) and (free space face_count)
+   */
+  inline std::pair<uint, uint> get_faces_count(const CDT& triangulation,
+                                               const boost::associative_property_map<BooleanFaceMap> map)
   {
     int face_count = 0;
     int indomain_face_count = 0;
@@ -140,11 +145,15 @@ namespace UTILS
         ++indomain_face_count;
       ++face_count;
     }
-    std::cout << std::endl << std::endl << "polygon indomain faces: " << indomain_face_count << std::endl;
-    std::cout << "polygon total faces: " << face_count << std::endl << std::endl;
+    return std::pair<uint, uint>{face_count, indomain_face_count};
   }
 
-  void get_stats(const CDT& triangulation)
+  /**
+   *
+   * @param triangulation
+   * @return pair with (total face_count) and (free space face_count)
+   */
+  inline std::pair<uint, uint> get_faces_count(const CDT& triangulation)
   {
     int face_count = 0;
     int indomain_face_count = 0;
@@ -154,8 +163,21 @@ namespace UTILS
         ++indomain_face_count;
       ++face_count;
     }
-    std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << indomain_face_count << std::endl;
-    std::cout << "polygon total faces (w/o map): " << face_count << std::endl << std::endl;
+    return std::pair<uint, uint>{face_count, indomain_face_count};
+  }
+
+  void get_stats(const CDT& triangulation, const boost::associative_property_map<BooleanFaceMap> map)
+  {
+    std::pair<uint, uint> count = get_faces_count(triangulation, map);
+    std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << count.second << std::endl;
+    std::cout << "polygon total faces (w/o map): " << count.first << std::endl << std::endl;
+  }
+
+  void get_stats(const CDT& triangulation)
+  {
+    std::pair<uint, uint> count = get_faces_count(triangulation);
+    std::cout << std::endl << std::endl << "polygon indomain faces (w/o map): " << count.second << std::endl;
+    std::cout << "polygon total faces (w/o map): " << count.first << std::endl << std::endl;
   }
 
   inline double get_area(Face_handle f)

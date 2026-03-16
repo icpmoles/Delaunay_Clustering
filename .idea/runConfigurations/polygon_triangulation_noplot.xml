@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="polygon_triangulation_noplot" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--b=0.125 --size=5" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$ContentRoot$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Delaunay_Clustering" TARGET_NAME="polygon_triangulation" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Delaunay_Clustering" RUN_TARGET_NAME="polygon_triangulation">
+  <configuration default="false" name="polygon_triangulation_noplot" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="--b=0.125 --size=10" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$ContentRoot$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Delaunay_Clustering" TARGET_NAME="polygon_triangulation" CONFIG_NAME="Release (LLVM)" RUN_TARGET_PROJECT_NAME="Delaunay_Clustering" RUN_TARGET_NAME="polygon_triangulation">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

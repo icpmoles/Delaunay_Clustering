@@ -26,6 +26,7 @@
 #include "Convexification/preprocessing.hpp"
 #include "Convexification/utils.hpp"
 #include "Convexification/wkt_import.hpp"
+#include "GraphPartitioning/DualGraph.hpp"
 
 namespace po = boost::program_options;
 
@@ -171,28 +172,33 @@ int main(int argc, char* argv[])
   CGAL::mark_domain_in_triangulation(cdt_workplace);
 
   UTILS::get_stats(cdt_workplace);
-  if(false)
+  if(view_plot_opt)
     CGAL::draw(cdt_workplace);
 
-  // test combinatorial exploration
-  std::vector<std::string> test_v{"1", "2", "3", "4"};
-  std::vector<std::pair<uint, uint>> indexes_ = UTILS::get_combinatorial_indexes(test_v.size());
-  std::cout << "PRINTING" << std::endl;
-  for(std::pair<uint, uint> idx : indexes_)
-  {
-    for(auto it = std::next(test_v.begin(), idx.first); it != std::prev(test_v.end(), idx.second); ++it)
-    {
-      std::cout << *it << " ";
-    }
-    std::cout << std::endl;
-  }
+  // // test combinatorial exploration
+  // std::vector<std::string> test_v{"1", "2", "3", "4"};
+  // std::vector<std::pair<uint, uint>> indexes_ = UTILS::get_combinatorial_indexes(test_v.size());
+  // std::cout << "PRINTING" << std::endl;
+  // for(std::pair<uint, uint> idx : indexes_)
+  // {
+  //   for(auto it = std::next(test_v.begin(), idx.first); it != std::prev(test_v.end(), idx.second); ++it)
+  //   {
+  //     std::cout << *it << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+
+  // Graph Partitioning
+
 
   // test cluster manager
 
   CM::Cluster_Manager cdt_workplace_wi = CM::Cluster_Manager(cdt_workplace, view_plot_opt);
-  cdt_workplace_wi.iterate();
-  if(view_plot_opt)
-    cdt_workplace_wi.show_map(0);
+
+  DG::DualGraph dg=DG::DualGraph(cdt_workplace);
+  // cdt_workplace_wi.iterate();
+  // if(view_plot_opt)
+  //   cdt_workplace_wi.show_map(0);
 
 
   return 0;

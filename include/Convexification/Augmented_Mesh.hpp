@@ -55,12 +55,22 @@ namespace AUM // Augmented Mesh
 
 
     Face_Description* get_face_description(Face_handle f);
+
     /**
      *
      * @param destination Where to save the Face_Handle if the procedure is successful
      * @return if the call was successful
      */
     bool get_inlier_face_(Face_handle& destination) const;
+
+    Face_handle get_cdt_faces_begin() { return this->cdt_.all_faces_begin(); }
+
+    Face_handle get_cdt_faces_end() { return this->cdt_.all_faces_end(); }
+
+
+    std::vector<Face_Description*> get_face_neighbours(Face_handle f);
+    //
+    // std::vector<Face_Description*> get_face_neighbours(uint i);
 
   private:
     void populate_properties_();
@@ -81,6 +91,9 @@ namespace AUM // Augmented Mesh
 
     CDT cdt_;
     std::vector<Face_Description> Faces_Properties_;
+
+    uint faces_ = 0;
+    uint inlier_faces_ = 0;
   };
 
   inline Face_Description Augmented_Mesh::get_face_description(size_t i) const { return this->Faces_Properties_[i]; }
@@ -103,26 +116,37 @@ namespace AUM // Augmented Mesh
     const size_t n_faces = cdt_.number_of_faces();
     Faces_Properties_.clear();
     Faces_Properties_.reserve(n_faces);
-    size_t i = 0;
-    for(const Face_handle f : this->cdt_.finite_face_handles())
+    std::pair<uint, uint> stats = UTILS::get_faces_count(this->cdt_);
+    size_t i = 0; // free face counter
+    for(Face_handle f : this->cdt_.all_face_handles())
     {
-      Faces_Properties_.push_back({.Face_Id = i,
-                                   .Area = UTILS::get_area(f),
-                                   .is_Area_Calculated = true,
-                                   .is_Face_Assigned = true,
-                                   .is_InDomain = f->is_in_domain(),
-                                   .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
+
+      // the new faces are shuffled to have :
+      // lower #inliner_face_ are all inliers
+      // upper #inlier_face_+1 -> faces_ are the outliers
+      Faces_Properties_.push_back(
+        (Face_Description){.Face_Id = f->is_in_domain() ? inlier_faces_ : stats.second - inlier_faces_,
+                           .Area = UTILS::get_area(f),
+                           .is_Area_Calculated = true,
+                           .is_Face_Assigned = true,
+                           .is_InDomain = f->is_in_domain(),
+                           .Distance = f->is_in_domain() ? UNEXPLORED_VALUE : OBSTACLE_VALUE});
 
       f->set_time_stamp(i);
-
       i++;
+      if(f->is_in_domain())
+      {
+        inlier_faces_++;
+      }
     }
+    faces_ = stats.first + 1;
+    inlier_faces_ = stats.second + 1;
   }
 
   inline bool Augmented_Mesh::get_inlier_face_(Face_handle& destination) const
   {
-    Face_handle tentative = this->cdt_.finite_faces_begin();
-    const Face_handle last = this->cdt_.finite_faces_end();
+    Face_handle tentative = this->cdt_.all_faces_begin();
+    const Face_handle last = this->cdt_.all_faces_end();
 
     do
     {
@@ -142,6 +166,28 @@ namespace AUM // Augmented Mesh
     while(++tentative != last);
     return false;
   }
+
+  std::vector<Face_Description*> Augmented_Mesh::get_face_neighbours(Face_handle f)
+  {
+    std::vector<Face_Description*> neighbours;
+    for(int i = 0; i < 3; i++)
+    {
+      Face_handle candidate = f->neighbor(i);
+      if(get_face_description(candidate)->is_InDomain)
+      {
+        neighbours.push_back(get_face_description(candidate));
+      }
+      else
+      {
+        neighbours.push_back(nullptr);
+      }
+    }
+    return neighbours;
+  }
+  // inline std::vector<Face_Description*> Augmented_Mesh::get_face_neighbours(uint i)
+  // {
+  //   return get_face_neighbours();
+  // }
 
   inline size_t Augmented_Mesh::get_vector_idx_(const Face_handle f) { return get_face_description(f)->Face_Id; }
 
@@ -166,7 +212,7 @@ namespace AUM // Augmented Mesh
   inline size_t Augmented_Mesh::reset_unassigned_faces()
   {
     size_t i = 0;
-    for(const Face_handle f : this->cdt_.finite_face_handles())
+    for(const Face_handle f : this->cdt_.all_face_handles())
     {
       if(get_face_description(f)->is_Cluster_Assigned == false)
       {
